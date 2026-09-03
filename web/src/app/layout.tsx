@@ -59,6 +59,7 @@ export const metadata: Metadata = {
     images: [absolute('/images/jj3A5N8.png')],
   },
   category: 'technology',
+  verification: { google: 'IDix7jtEtUJ9Rx3H9YZPGKn-zI8Wf3GNoMcCIQFKMPc' },
 };
 
 export const viewport: Viewport = {
