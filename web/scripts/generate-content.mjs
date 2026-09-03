@@ -341,6 +341,51 @@ function dropSubsection(md, heading) {
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
+/**
+ * Meta descriptions, written per page instead of clipped from the opening
+ * paragraph.  The eight case studies otherwise share one boilerplate line, and
+ * several reference pages summarise to little more than their own title, which
+ * makes them look like near duplicates to a crawler.  Metadata only: no
+ * published text changes, so the fidelity check is unaffected.
+ */
+const DESCRIPTIONS = {
+  '/hld/case-studies/pastebin':
+    'Design Pastebin.com or Bit.ly: use cases, constraints, back-of-the-envelope estimates, API design, data model, and how to scale the read-heavy path.',
+  '/hld/case-studies/twitter':
+    'Design the Twitter timeline and search: fan-out on write versus read, the tweet and user graph data model, feed generation, and scaling to millions of users.',
+  '/hld/case-studies/web-crawler':
+    'Design a web crawler: crawl scheduling, duplicate URL detection, politeness and rate limiting, link extraction, and distributing the crawl across workers.',
+  '/hld/case-studies/mint':
+    'Design Mint.com: connecting bank accounts, categorising transactions, the budget data model, and running recurring extracts without hammering upstream APIs.',
+  '/hld/case-studies/social-graph':
+    'Design the data structures for a social network: modelling the friend graph, finding the shortest path between two people, and sharding a graph that will not fit on one machine.',
+  '/hld/case-studies/query-cache':
+    'Design a key-value store for a search engine: cache eviction with an LRU, sizing the cache, handling misses, and keeping cached queries fresh.',
+  '/hld/case-studies/sales-rank':
+    "Design Amazon's sales ranking by category: aggregating sales events with MapReduce, choosing the ranking window, and serving ranks with low latency.",
+  '/hld/case-studies/scaling-aws':
+    'Design a system that scales to millions of users on AWS: moving from a single box through vertical scaling, read replicas, caching, autoscaling and a CDN.',
+
+  '/getting-started/motivation':
+    'Why learn system design: what the interview actually tests, how this guide is organised, and what to study first if you are starting from nothing.',
+  '/getting-started/how-to-approach-a-system-design-interview-question':
+    'A four step method for system design interviews: outline use cases and constraints, sketch a high level design, dive into components, then scale the design.',
+  '/hld/latency-vs-throughput':
+    'Latency is the time to perform an action; throughput is how many actions complete per unit of time. Why you aim for maximal throughput at acceptable latency.',
+  '/hld/security':
+    'Security basics for the system design interview: encrypt in transit and at rest, sanitise user input against XSS and SQL injection, and apply least privilege.',
+  '/reference/powers-of-two-table':
+    'Powers of two from 2^7 to 2^40 with exact and approximate values in bytes, the table to reach for during back-of-the-envelope capacity estimates.',
+  '/reference/real-world-architectures':
+    'How real systems are actually built: engineering write-ups on the architectures behind large scale products, and what to take from each.',
+  '/reference/company-architectures':
+    'Published architectures from Amazon, Netflix, Twitter, Uber, Pinterest and others, worth reading before an interview with any of them.',
+  '/reference/company-engineering-blogs':
+    'Engineering blogs from the companies you are interviewing with, the best source of current, real world design decisions and their trade-offs.',
+  '/about/credits':
+    'Sources and further reading behind this guide, including Hired in Tech, Cracking the Coding Interview, and the High Scalability archives.',
+};
+
 const rm = (anchor, section, group, slug, short, omit) => ({ kind: 'readme', anchor, section, group, slug, short, omit });
 const ax = (anchor, section, group, slug) => ({ kind: 'appendix', anchor, section, group, slug });
 const sd = (dir, section, group, slug, short) => ({ kind: 'solution', dir, section, group, slug, short });
@@ -462,6 +507,7 @@ function buildPage(entry) {
     title,
     navTitle: entry.short || title,
     ...summarize(body, title),
+    ...(DESCRIPTIONS[route] ? { description: DESCRIPTIONS[route] } : {}),
     source,
     sourceAnchor: entry.anchor || null,
     body,
