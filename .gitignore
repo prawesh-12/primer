@@ -64,3 +64,6 @@ scratch/
 template.ipynb
 # Upstream primer source, fetched on demand by web/scripts/generate-content.mjs
 .upstream/
+
+# Vercel
+.vercel
