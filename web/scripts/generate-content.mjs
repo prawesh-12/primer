@@ -43,6 +43,16 @@ async function upstream(rel) {
 }
 
 const primerReadme = await upstream('README.md');
+
+/** Everything deliberately left unpublished, recorded for the fidelity check. */
+const omittedChunks = [];
+
+/**
+ * Lines dropped from the README's opening block.  Both point at files this
+ * edition does not carry, the translated READMEs and TRANSLATIONS.md, and it
+ * is published in English only.
+ */
+const LEAD_OMIT = [/^\*\[English\]\(/, /^\*\*Help \[translate\]\(/];
 const slugify = (text) => new GithubSlugger().slug(text);
 
 // ---------------------------------------------------------------------------
@@ -186,7 +196,13 @@ function summarize(md, fallback) {
 
 const readmeLead = (() => {
   const [lead] = splitOnHeading(primerReadme, 2);
-  return takeTitle(lead);
+  const { title, body } = takeTitle(lead);
+  const kept = [];
+  for (const line of body.split('\n')) {
+    if (LEAD_OMIT.some((re) => re.test(line))) omittedChunks.push(line);
+    else kept.push(line);
+  }
+  return { title, body: kept.join('\n').replace(/\n{3,}/g, '\n\n').trim() };
 })();
 
 const readmeSections = (() => {
@@ -288,8 +304,6 @@ const SECTIONS = [
  * repository.  Fenced code is skipped so a `#` inside a block is never read
  * as a heading.
  */
-const omittedChunks = [];
-
 /**
  * README sections this edition deliberately does not publish.  Declared here so
  * the fidelity check can tell a removal that was chosen from one that was an
