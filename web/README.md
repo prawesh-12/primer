@@ -43,7 +43,7 @@ Set `NEXT_PUBLIC_SITE_URL` to wherever the site lives. If that URL has a path â€
 say â€” the `basePath` follows automatically:
 
 ```bash
-NEXT_PUBLIC_SITE_URL=https://prawesh-12.github.io/system-design-primer npm run build   # -> /system-design-primer
+NEXT_PUBLIC_SITE_URL=https://systemdesignprimer.github.io npm run build   # -> served at the root, no basePath
 NEXT_PUBLIC_SITE_URL=https://example.com npm run build                                  # -> /
 ```
 

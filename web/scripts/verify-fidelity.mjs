@@ -95,6 +95,25 @@ for (const section of sections) {
  */
 const RELABELLED = new Set(['Appendix']);
 
+/**
+ * Sections this edition deliberately does not publish, recorded by the
+ * generator.  They are removed from what we expect to find, so an intentional
+ * cut reads as intentional and only a genuine loss fails the check.
+ */
+let omittedLines = 0;
+const omittedFile = path.join(CONTENT, 'omitted.json');
+if (fs.existsSync(omittedFile)) {
+  for (const chunk of JSON.parse(fs.readFileSync(omittedFile, 'utf8'))) {
+    for (const line of linesOf(chunk)) {
+      const count = expected.get(line);
+      if (!count) continue;
+      if (count === 1) expected.delete(line);
+      else expected.set(line, count - 1);
+      omittedLines += 1;
+    }
+  }
+}
+
 // ---- compare --------------------------------------------------------------
 
 const dropped = [];
@@ -113,6 +132,7 @@ for (const [line, count] of produced) {
 
 console.log(`source lines:    ${expected.size} distinct`);
 console.log(`published lines: ${produced.size} distinct`);
+console.log(`omitted:         ${omittedLines} (deliberate)`);
 console.log(`dropped:         ${dropped.length}`);
 console.log(`invented:        ${added.length}`);
 console.log(`relabelled:      ${[...RELABELLED].join(', ')}`);
