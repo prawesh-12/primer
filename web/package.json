@@ -1,0 +1,50 @@
+{
+  "name": "system-design-primer-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A navigable, SEO-friendly Next.js edition of The System Design Primer, split into High Level Design and Low Level Design tracks.",
+  "scripts": {
+    "content": "node scripts/generate-content.mjs",
+    "dev": "npm run content && next dev",
+    "build": "npm run content && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "verify": "node scripts/verify-fidelity.mjs"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "lucide-react": "^1.40.0",
+    "next": "15.5.4",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.6.7",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "shadcn": "^4.20.1",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "22.15.3",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6",
+    "github-slugger": "2.0.0",
+    "gray-matter": "4.0.3",
+    "hast-util-to-string": "3.0.1",
+    "postcss": "^8.5.28",
+    "rehype-autolink-headings": "7.1.0",
+    "rehype-highlight": "7.0.2",
+    "rehype-raw": "7.0.0",
+    "rehype-slug": "6.0.0",
+    "rehype-stringify": "10.0.1",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "5.8.3",
+    "unified": "11.0.5",
+    "unist-util-visit": "5.0.0"
+  }
+}

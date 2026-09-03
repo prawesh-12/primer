@@ -1,0 +1,70 @@
+This repository contains two separate bodies of work, under two separate
+licenses. Please read both.
+
+
+================================================================================
+1. THE CONTENT (the primer text, diagrams and worked solutions)
+================================================================================
+
+Copyright 2017 Donne Martin
+
+Creative Commons Attribution 4.0 International License (CC BY 4.0)
+
+http://creativecommons.org/licenses/by/4.0/
+
+This covers everything under solutions/ and images/, the primer source cached
+in .upstream/, and every generated page under web/content/. It is the work of
+Donne Martin, taken from
+https://github.com/donnemartin/system-design-primer and reproduced unchanged.
+Copyright remains with him.
+
+The original author's own statement, carried over from the upstream
+repository, reads:
+
+    I am providing code and resources in this repository to you under an open
+    source license.  Because this is my personal repository, the license you
+    receive to my code and resources is from me and not my employer (Facebook).
+
+Under CC BY 4.0 you may share and adapt this material, including commercially,
+provided you give appropriate credit to Donne Martin, link to the license, and
+indicate if changes were made.
+
+
+================================================================================
+2. THE WEB EDITION (the software in web/)
+================================================================================
+
+Copyright 2026 prawesh-12
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+This covers only the source code, build scripts, layout and visual design of
+the site: web/src, web/scripts and the project configuration. It does not
+cover, and makes no claim over, the primer content described in section 1.
+
+
+================================================================================
+IN SHORT
+================================================================================
+
+The writing is Donne Martin's, under CC BY 4.0.
+The website around it is prawesh-12's, under MIT.
+prawesh-12 claims no ownership of the primer content.
