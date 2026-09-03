@@ -39,7 +39,7 @@ jobs:
         working-directory: web
         env:
           # Change this if you move the site to a custom domain.
-          NEXT_PUBLIC_SITE_URL: https://prawesh-12.github.io/system-design-primer
+          NEXT_PUBLIC_SITE_URL: https://systemdesignprimer.github.io
         run: npm run build
 
       - name: Check nothing was lost in the restructure
