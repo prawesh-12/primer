@@ -4,7 +4,7 @@
 // without running JavaScript.  Set NEXT_PUBLIC_SITE_URL to wherever it is
 // deployed; a URL with a path (a GitHub Pages project site, say) also sets
 // the basePath for you.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://prawesh-12.github.io/system-design-primer';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://systemdesignprimer.github.io';
 const basePath = new URL(siteUrl).pathname.replace(/\/$/, '');
 
 const nextConfig = {

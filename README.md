@@ -4,7 +4,7 @@ A navigable, statically generated reading edition of
 [The System Design Primer](https://github.com/donnemartin/system-design-primer),
 restructured into two tracks: **High Level Design** and **Low Level Design**.
 
-Live site: https://prawesh-12.github.io/system-design-primer/
+Live site: https://systemdesignprimer.github.io/
 
 ## What this repo is
 

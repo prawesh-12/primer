@@ -288,9 +288,24 @@ const SECTIONS = [
  * repository.  Fenced code is skipped so a `#` inside a block is never read
  * as a heading.
  */
+const omittedChunks = [];
+
+/**
+ * README sections this edition deliberately does not publish.  Declared here so
+ * the fidelity check can tell a removal that was chosen from one that was an
+ * accident; drop an anchor from this list and the section comes back.
+ */
+const OMITTED_SECTIONS = [
+  'anki-flashcards',
+  'contributing',
+  'under-development',
+  'contact-info',
+];
+
 function dropSubsection(md, heading) {
   const lines = md.split('\n');
   const out = [];
+  const removed = [];
   let fenced = false;
   let removingAt = null;
   for (const line of lines) {
@@ -301,11 +316,14 @@ function dropSubsection(md, heading) {
       if (removingAt !== null && level <= removingAt) removingAt = null;
       if (removingAt === null && m[2].trim() === heading) {
         removingAt = level;
+        removed.push(line);
         continue;
       }
     }
     if (removingAt === null) out.push(line);
+    else removed.push(line);
   }
+  omittedChunks.push(removed.join('\n'));
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
@@ -516,6 +534,13 @@ const manifest = {
   topAnchors,
   files,
 };
+for (const anchor of OMITTED_SECTIONS) {
+  const section = readmeSections.get(anchor);
+  if (!section) throw new Error(`OMITTED_SECTIONS names a section that does not exist: ${anchor}`);
+  omittedChunks.push(section.md);
+}
+fs.writeFileSync(path.join(OUT, 'omitted.json'), JSON.stringify(omittedChunks, null, 2), 'utf8');
+
 fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
 
 // Keep public/images in sync with the repo's own images folder.  The handful
