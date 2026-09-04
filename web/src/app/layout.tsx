@@ -11,6 +11,7 @@ import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
+  SITE_OG_IMAGE,
   SITE_TAGLINE,
   SITE_TITLE,
   SITE_URL,
@@ -25,7 +26,7 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 /** Headings only: a face with enough character to be an entry point on sight. */
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
 
-const OG_IMAGE = { url: absolute('/images/jj3A5N8.png'), width: 1234, height: 1666, alt: SITE_NAME };
+const OG_IMAGE = { ...SITE_OG_IMAGE, url: absolute(SITE_OG_IMAGE.pathname) };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

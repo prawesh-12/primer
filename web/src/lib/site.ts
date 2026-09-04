@@ -37,6 +37,13 @@ export const SITE_ALTERNATE_NAMES = [
   'HLD and LLD Primer',
 ];
 
+export const SITE_OG_IMAGE = {
+  pathname: '/images/og-system-design-primer.png',
+  width: 1200,
+  height: 630,
+  alt: 'System Design Primer: HLD, LLD and interviews',
+};
+
 /** The upstream repository every piece of content comes from. */
 export const UPSTREAM = 'https://github.com/donnemartin/system-design-primer';
 

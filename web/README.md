@@ -2,6 +2,8 @@
 
 A Next.js reading edition of [donnemartin/system-design-primer](https://github.com/donnemartin/system-design-primer).
 
+Live site: [System Design Primer for beginners, high level system design and interview prep](https://systemdesignprimer.vercel.app/)
+
 The markdown in this repository stays the single source of truth. Nothing here rewrites it: a build step
 *splits* the one very long `README.md` (plus the `solutions/` folders and notebooks) into one page per topic,
 files those pages under a **High Level Design** and a **Low Level Design** track, and repoints every link that

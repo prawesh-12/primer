@@ -19,7 +19,7 @@ import {
 } from '@/lib/content';
 import { renderMarkdown } from '@/lib/markdown';
 import { manifest } from '@/lib/content';
-import { LICENSE, SITE_KEYWORDS, SITE_NAME, UPSTREAM, absolute } from '@/lib/site';
+import { LICENSE, SITE_KEYWORDS, SITE_NAME, SITE_OG_IMAGE, UPSTREAM, absolute } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,7 +65,44 @@ const PAGE_SEO_TITLE: Record<string, string> = {
   '/lld/interview-questions': 'Object-Oriented Design Interview Questions',
 };
 
+const BEGINNER_ROADMAP = [
+  {
+    title: 'Start with the study guide',
+    href: '/getting-started/study-guide',
+    description: 'Choose a short, medium or long study plan based on how much interview prep time you have.',
+  },
+  {
+    title: 'Learn the interview framework',
+    href: '/getting-started/how-to-approach-a-system-design-interview-question',
+    description: 'Practice requirements, constraints, high level design, component deep dives and scaling trade-offs.',
+  },
+  {
+    title: 'Review system design topics',
+    href: '/getting-started/index-of-system-design-topics',
+    description: 'Scan the major building blocks: scalability, availability, consistency, databases, caches and queues.',
+  },
+  {
+    title: 'Move into HLD fundamentals',
+    href: '/hld/start-here',
+    description: 'Continue with high level system design patterns before working through full interview case studies.',
+  },
+];
+
+const BEGINNER_FAQ = [
+  {
+    question: 'Where should a beginner start in the System Design Primer?',
+    answer:
+      'Begin with the study guide, then read the system design interview approach, then move into high level design fundamentals.',
+  },
+  {
+    question: 'Do I need low level design before high level design?',
+    answer:
+      'No. Most learners should start with high level system design, then use low level design practice for object-oriented interview rounds.',
+  },
+];
+
 const unique = (values: string[]) => [...new Set(values.filter(Boolean))];
+const OG_IMAGE = { ...SITE_OG_IMAGE, url: absolute(SITE_OG_IMAGE.pathname) };
 
 interface Params {
   params: Promise<{ slug: string[] }>;
@@ -106,8 +143,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
         title: `${title} · ${SITE_NAME}`,
         description: section.tagline,
         url: `${absolute(section.route)}/`,
+        images: [OG_IMAGE],
       },
-      twitter: { card: 'summary_large_image', title, description: section.tagline },
+      twitter: { card: 'summary_large_image', title, description: section.tagline, images: [OG_IMAGE.url] },
     };
   }
 
@@ -125,8 +163,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       title: `${seoTitle} · ${SITE_NAME}`,
       description: page.description,
       url: `${absolute(page.route)}/`,
+      images: [OG_IMAGE],
     },
-    twitter: { card: 'summary_large_image', title: seoTitle, description: page.description },
+    twitter: { card: 'summary_large_image', title: seoTitle, description: page.description, images: [OG_IMAGE.url] },
   };
 }
 
@@ -165,24 +204,48 @@ export default async function CatchAll({ params }: Params) {
       : '';
     const sectionJsonLd = {
       '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      '@id': `${absolute(section.route)}/#collection`,
-      url: `${absolute(section.route)}/`,
-      name: SECTION_SEO[section.id]?.title ?? section.title,
-      description: section.tagline,
-      inLanguage: 'en',
-      isPartOf: { '@id': `${absolute('/')}#website` },
-      mainEntity: {
-        '@type': 'ItemList',
-        name: `${section.title} chapters`,
-        itemListElement: sectionPages.map((page, index) => ({
-          '@type': 'ListItem',
-          position: index + 1,
-          name: page.navTitle,
-          description: page.description,
-          url: `${absolute(page.route)}/`,
-        })),
-      },
+      '@graph': [
+        {
+          '@type': 'CollectionPage',
+          '@id': `${absolute(section.route)}/#collection`,
+          url: `${absolute(section.route)}/`,
+          name: SECTION_SEO[section.id]?.title ?? section.title,
+          description: section.tagline,
+          inLanguage: 'en',
+          isPartOf: { '@id': `${absolute('/')}#website` },
+          about:
+            section.id === 'getting-started'
+              ? [
+                  { '@type': 'Thing', name: 'system design for beginners' },
+                  { '@type': 'Thing', name: 'system design interview preparation' },
+                ]
+              : undefined,
+          mainEntity: {
+            '@type': 'ItemList',
+            name: `${section.title} chapters`,
+            itemListElement: sectionPages.map((page, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              name: page.navTitle,
+              description: page.description,
+              url: `${absolute(page.route)}/`,
+            })),
+          },
+        },
+        ...(section.id === 'getting-started'
+          ? [
+              {
+                '@type': 'FAQPage',
+                '@id': `${absolute(section.route)}/#faq`,
+                mainEntity: BEGINNER_FAQ.map((item) => ({
+                  '@type': 'Question',
+                  name: item.question,
+                  acceptedAnswer: { '@type': 'Answer', text: item.answer },
+                })),
+              },
+            ]
+          : []),
+      ],
     };
 
     return (
@@ -200,6 +263,53 @@ export default async function CatchAll({ params }: Params) {
           {section.tagline}
         </p>
         {lead && <div className="prose mt-6 max-w-none" dangerouslySetInnerHTML={{ __html: lead }} />}
+
+        {section.id === 'getting-started' && (
+          <>
+            <section className="mt-12" aria-labelledby="beginner-roadmap-title">
+              <h2 id="beginner-roadmap-title" className="font-heading text-2xl font-bold tracking-tight">
+                Beginner roadmap
+              </h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {BEGINNER_ROADMAP.map((item, index) => (
+                  <Card key={item.href} className="relative gap-3 py-5">
+                    <CardHeader className="px-5">
+                      <Badge variant="outline" className="w-fit font-mono">
+                        {String(index + 1).padStart(2, '0')}
+                      </Badge>
+                      <CardTitle className="mt-2 text-[0.95rem] font-semibold">
+                        <Link href={item.href} className="after:absolute after:inset-0">
+                          {item.title}
+                        </Link>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-5">
+                      <p className="text-muted-foreground text-sm leading-6">{item.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            <section className="mt-12" aria-labelledby="beginner-faq-title">
+              <h2 id="beginner-faq-title" className="font-heading text-2xl font-bold tracking-tight">
+                Beginner FAQ
+              </h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {BEGINNER_FAQ.map((item) => (
+                  <Card key={item.question} className="py-5">
+                    <CardHeader className="px-5">
+                      <CardTitle className="text-base font-semibold leading-6">{item.question}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-5">
+                      <p className="text-muted-foreground text-sm leading-6">{item.answer}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
 
         {groups.map((group) => (
           <section key={group.name} className="mt-16">

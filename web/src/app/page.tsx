@@ -8,6 +8,7 @@ import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
+  SITE_OG_IMAGE,
   SITE_TAGLINE,
   SITE_TITLE,
   absolute,
@@ -24,7 +25,7 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-const OG_IMAGE = { url: absolute('/images/jj3A5N8.png'), width: 1234, height: 1666, alt: SITE_NAME };
+const OG_IMAGE = { ...SITE_OG_IMAGE, url: absolute(SITE_OG_IMAGE.pathname) };
 
 export const metadata: Metadata = {
   title: { absolute: SITE_TITLE },
@@ -58,6 +59,55 @@ const TRACK_BLURB: Record<string, string[]> = {
     'Six worked solutions from the primer notebooks',
   ],
 };
+
+const LEARNING_PATH = [
+  {
+    step: '01',
+    title: 'System design for beginners',
+    href: '/getting-started',
+    description:
+      'Start with the study guide, the interview approach and the index of system design topics before diving into individual components.',
+  },
+  {
+    step: '02',
+    title: 'High level system design',
+    href: '/hld',
+    description:
+      'Learn the core HLD trade-offs: scalability, latency, availability, consistency, caching, queues, databases and load balancing.',
+  },
+  {
+    step: '03',
+    title: 'Worked interview designs',
+    href: '/hld/case-studies',
+    description:
+      'Practice with complete designs for Pastebin, Twitter, a web crawler, social graph, query cache, sales ranking and AWS scaling.',
+  },
+  {
+    step: '04',
+    title: 'Low level design practice',
+    href: '/lld',
+    description:
+      'Move from architecture into classes, object relationships and runnable examples for common LLD interview questions.',
+  },
+];
+
+const FAQ = [
+  {
+    question: 'Is the System Design Primer good for beginners?',
+    answer:
+      'Yes. Start with the getting started track, then move into high level system design fundamentals before attempting the worked case studies.',
+  },
+  {
+    question: 'What is high level system design?',
+    answer:
+      'High level system design focuses on system architecture: requirements, APIs, data models, scalability, load balancing, caching, queues, databases, availability and consistency.',
+  },
+  {
+    question: 'How should I study system design interviews?',
+    answer:
+      'Learn the common building blocks, practice back-of-the-envelope estimates, explain trade-offs clearly, and compare your design with worked examples.',
+  },
+];
 
 export default async function Home() {
   const cover = await renderHomeLead();
@@ -94,6 +144,18 @@ export default async function Home() {
           name: section.title,
           description: section.tagline,
           url: `${absolute(section.route)}/`,
+        })),
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': `${absolute('/')}#faq`,
+        mainEntity: FAQ.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer,
+          },
         })),
       },
     ],
@@ -144,6 +206,55 @@ export default async function Home() {
           </div>
         ))}
       </dl>
+
+      <section className="mt-16" aria-labelledby="learning-path-title">
+        <div className="flex items-center gap-3">
+          <h2 id="learning-path-title" className="font-heading text-2xl font-bold tracking-tight">
+            System design learning path
+          </h2>
+          <Separator className="flex-1" />
+        </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {LEARNING_PATH.map((item) => (
+            <Card key={item.step} className="relative gap-3 py-5">
+              <CardHeader className="px-5">
+                <Badge variant="outline" className="w-fit font-mono">
+                  {item.step}
+                </Badge>
+                <CardTitle className="font-heading mt-2 text-lg font-semibold">
+                  <Link href={item.href} className="after:absolute after:inset-0">
+                    {item.title}
+                  </Link>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5">
+                <p className="text-muted-foreground text-sm leading-6">{item.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-16" aria-labelledby="faq-title">
+        <div className="flex items-center gap-3">
+          <h2 id="faq-title" className="font-heading text-2xl font-bold tracking-tight">
+            System design FAQ
+          </h2>
+          <Separator className="flex-1" />
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          {FAQ.map((item) => (
+            <Card key={item.question} className="py-5">
+              <CardHeader className="px-5">
+                <CardTitle className="text-base font-semibold leading-6">{item.question}</CardTitle>
+              </CardHeader>
+              <CardContent className="px-5">
+                <p className="text-muted-foreground text-sm leading-6">{item.answer}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       {cover && (
         <div

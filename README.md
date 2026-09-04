@@ -4,13 +4,17 @@ A navigable, statically generated reading edition of
 [The System Design Primer](https://github.com/donnemartin/system-design-primer),
 restructured into two tracks: **High Level Design** and **Low Level Design**.
 
-Live site: https://systemdesignprimer.vercel.app/
+Live site: [System Design Primer for beginners, high level system design and interview prep](https://systemdesignprimer.vercel.app/)
 
 ## What this repo is
 
 The primer is one very long README. This repo turns it into a browsable site:
 44 pages with a sidebar, full text search, per page contents, and light and
 dark themes. **Not one sentence of the original text is rewritten.**
+
+Use the live edition as a system design learning path: start with beginner
+study guidance, move into high level system design fundamentals, then practice
+with worked interview case studies and low level design examples.
 
 No copy of the primer's text is kept here. The build pulls it straight from
 [donnemartin/system-design-primer](https://github.com/donnemartin/system-design-primer)
