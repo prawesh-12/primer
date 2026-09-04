@@ -6,3 +6,4 @@ tsconfig.tsbuildinfo
 content/
 public/search-index.json
 public/images/*.webp
+.image-cache.json

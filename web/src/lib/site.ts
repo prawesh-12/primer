@@ -59,6 +59,8 @@ export const UPSTREAM = 'https://github.com/donnemartin/system-design-primer';
 
 export const BUILDER = 'https://github.com/prawesh-12';
 
+export const REPO = 'https://github.com/prawesh-12/primer';
+
 export const LICENSE = {
   name: 'CC BY 4.0',
   url: 'https://creativecommons.org/licenses/by/4.0/',

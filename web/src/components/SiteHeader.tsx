@@ -7,7 +7,7 @@ import ModeToggle from './ModeToggle';
 import { GitHubIcon } from './Icons';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
-import { BUILDER } from '@/lib/site';
+import { REPO } from '@/lib/site';
 
 export default function SiteHeader({ onSearch }: { onSearch: () => void }) {
   return (
@@ -34,9 +34,10 @@ export default function SiteHeader({ onSearch }: { onSearch: () => void }) {
 
         <ModeToggle />
 
-        <Button variant="ghost" size="icon-sm" asChild>
-          <a href={BUILDER} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <Button variant="outline" size="sm" asChild>
+          <a href={REPO} target="_blank" rel="noopener noreferrer">
             <GitHubIcon />
+            Repo
           </a>
         </Button>
       </div>

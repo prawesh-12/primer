@@ -709,13 +709,32 @@ for (const name of fs.readdirSync(IMG_OUT)) {
 }
 const RENDITION_WIDTHS = [640, 1024, 1536];
 
+// Encoding all of these takes the better part of a minute, and `npm run dev`
+// waits on it, so the result is cached against the source image's hash.
+const RENDITION_CACHE = path.join(WEB, '.image-cache.json');
+const cachedRenditions = fs.existsSync(RENDITION_CACHE)
+  ? JSON.parse(fs.readFileSync(RENDITION_CACHE, 'utf8'))
+  : {};
+const freshRenditions = {};
+
 // Line art on flat colour is where a lossy encoder loses to PNG, so both
 // modes are tried and the smaller wins. A rendition is kept only if it beats
 // the PNG: a matching <source> always wins over the <img>.
 async function renditions(name, size) {
   const source = path.join(IMG_OUT, name);
-  const original = fs.statSync(source).size;
+  const buffer = fs.readFileSync(source);
+  const original = buffer.length;
+  const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 16);
   const stem = name.replace(/\.[^.]+$/, '');
+
+  const previous = cachedRenditions[name];
+  if (
+    previous?.hash === hash &&
+    previous.renditions.every((r) => fs.existsSync(path.join(IMG_OUT, r.file)))
+  ) {
+    freshRenditions[name] = previous;
+    return previous.renditions;
+  }
   const widths = [...new Set(RENDITION_WIDTHS.filter((w) => w < size.width).concat(size.width))].sort(
     (a, b) => a - b,
   );
@@ -737,12 +756,14 @@ async function renditions(name, size) {
     fs.writeFileSync(target, best);
     kept.push({ width, file });
   }
+  freshRenditions[name] = { hash, renditions: kept };
   return kept;
 }
 
 for (const [name, size] of Object.entries(sizes)) {
   size.renditions = await renditions(name, size);
 }
+fs.writeFileSync(RENDITION_CACHE, JSON.stringify(freshRenditions, null, 2) + '\n', 'utf8');
 
 fs.writeFileSync(path.join(OUT, 'image-sizes.json'), JSON.stringify(sizes, null, 2), 'utf8');
 

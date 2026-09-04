@@ -7,7 +7,7 @@
     "content": "node scripts/generate-content.mjs",
     "dev": "npm run content && next dev",
     "build": "npm run content && next build",
-    "start": "next start",
+    "start": "npx --yes serve out",
     "lint": "next lint",
     "verify": "node scripts/verify-fidelity.mjs"
   },

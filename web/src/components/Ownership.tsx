@@ -1,11 +1,9 @@
 import { BookOpenIcon, CheckIcon, CodeIcon, ExternalLinkIcon } from 'lucide-react';
 
-import { BUILDER, LICENSE, UPSTREAM } from '@/lib/site';
+import { BUILDER, LICENSE, REPO, UPSTREAM } from '@/lib/site';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-
-const WEB_REPO = 'https://github.com/prawesh-12/primer';
 
 const link = 'text-link hover:text-link-hover underline underline-offset-4 transition-colors';
 
@@ -72,7 +70,7 @@ export default function Ownership() {
               </a>
               : the split into High Level and Low Level Design tracks, the navigation, the search and
               the visual design. Its source lives at{' '}
-              <a href={WEB_REPO} target="_blank" rel="noopener noreferrer" className={link}>
+              <a href={REPO} target="_blank" rel="noopener noreferrer" className={link}>
                 prawesh-12/primer
               </a>
               .
