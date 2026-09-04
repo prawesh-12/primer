@@ -12,7 +12,13 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 
-export const metadata = { title: 'Page not found' };
+// Served with a 404 status, but say so in the markup as well: a soft 404
+// that does get fetched should never end up in the index.
+export const metadata = {
+  title: 'Page not found',
+  description: 'That page is not part of this edition of the System Design Primer. Jump to the High Level Design or Low Level Design track instead.',
+  robots: { index: false, follow: true },
+};
 
 export default function NotFound() {
   return (

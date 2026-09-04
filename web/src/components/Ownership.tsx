@@ -42,12 +42,13 @@ export default function Ownership() {
           </CardHeader>
           <CardContent className="text-muted-foreground space-y-3 text-sm leading-relaxed">
             <p>
-              Every word, diagram and code sample on this site is the work of{' '}
+              Every chapter, diagram and code sample on this site is the work of{' '}
               <a href={UPSTREAM} target="_blank" rel="noopener noreferrer" className={link}>
                 Donne Martin
                 <ExternalLinkIcon className="ml-0.5 inline size-3 align-baseline" />
               </a>
-              , taken from <em>The System Design Primer</em> and reproduced unchanged.
+              , taken from <em>The System Design Primer</em> and reproduced unchanged. A build-time
+              check fails if a single line of it is dropped or altered.
             </p>
             <p>
               Copyright stays with him, and the text is published under the licence quoted above.
@@ -77,9 +78,16 @@ export default function Ownership() {
               </a>
               .
             </p>
+            <p>
+              One kind of writing here is original: the{' '}
+              <span className="text-foreground font-medium">Notes for this edition</span> at the foot
+              of each chapter, which cover how the topic tends to be examined in an interview. They
+              are marked as such wherever they appear, and they are kept out of the primer&rsquo;s own
+              text on purpose.
+            </p>
             <p className="text-foreground font-medium">
-              That covers the presentation only. No ownership of the primer&rsquo;s content is claimed
-              here, and none of the writing on this site is original to it.
+              No ownership of the primer&rsquo;s content is claimed here. Nothing above those notes on
+              any page is original to this edition.
             </p>
           </CardContent>
         </Card>

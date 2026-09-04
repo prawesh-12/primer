@@ -25,25 +25,27 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-const OG_IMAGE = { ...SITE_OG_IMAGE, url: absolute(SITE_OG_IMAGE.pathname) };
-
 export const metadata: Metadata = {
   title: { absolute: SITE_TITLE },
   description: SITE_DESCRIPTION,
   alternates: { canonical: '/' },
   keywords: SITE_KEYWORDS,
   openGraph: {
+    // A page-level `openGraph` replaces the layout's wholesale, so `siteName`
+    // has to be repeated or Google loses the name it labels the result with.
+    siteName: SITE_NAME,
+    locale: 'en_US',
     type: 'website',
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     url: absolute('/'),
-    images: [OG_IMAGE],
+    images: [SITE_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [OG_IMAGE.url],
+    images: [SITE_OG_IMAGE.url],
   },
 };
 

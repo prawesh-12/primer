@@ -26,6 +26,8 @@ export interface PageMeta {
   sourceAnchor: string | null;
   topAnchor: string;
   headings: Heading[];
+  /** ISO date the page's own text last changed; see content-dates.json. */
+  lastModified: string;
 }
 
 export interface SectionMeta {
@@ -38,6 +40,8 @@ export interface SectionMeta {
 }
 
 interface Manifest {
+  /** Hub routes ('/' and each section) to the date anything under them changed. */
+  dates: Record<string, string>;
   sections: SectionMeta[];
   pages: PageMeta[];
   anchors: Record<string, string>;

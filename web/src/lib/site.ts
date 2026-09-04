@@ -13,7 +13,7 @@ export const SITE_TAGLINE =
   'Learn high level system design and low level design from the open source System Design Primer. Study scalable architecture, interview trade-offs and worked examples.';
 
 export const SITE_DESCRIPTION =
-  'System Design Primer for beginners: learn high level system design, low level design, scalable architecture, distributed systems and system design interview patterns.';
+  'System Design Primer for beginners: high level design, low level design, scalable architecture, distributed systems and system design interview patterns.';
 
 export const SITE_KEYWORDS = [
   'system design primer',
@@ -37,11 +37,23 @@ export const SITE_ALTERNATE_NAMES = [
   'HLD and LLD Primer',
 ];
 
+/** Absolute, and shaped exactly like an Open Graph image entry: spreading it
+ *  into `openGraph.images` must not leak stray keys as `og:image:*` tags. */
 export const SITE_OG_IMAGE = {
-  pathname: '/images/og-system-design-primer.png',
+  url: absolute('/images/og-system-design-primer.png'),
   width: 1200,
   height: 630,
   alt: 'System Design Primer: HLD, LLD and interviews',
+};
+
+/** Every icon the site ships, as served from `public/`. */
+export const SITE_ICONS = {
+  ico: '/favicon.ico',
+  svg: '/favicon.svg',
+  png192: '/icon-192.png',
+  png512: '/icon-512.png',
+  apple: '/apple-touch-icon.png',
+  manifest: '/site.webmanifest',
 };
 
 /** The upstream repository every piece of content comes from. */

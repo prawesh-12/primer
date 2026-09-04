@@ -9,6 +9,8 @@
  *     node scripts/generate-content.mjs   ->  ./content/**.md + ./content/manifest.json
  */
 
+import crypto from 'node:crypto';
+import sharp from 'sharp';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -289,14 +291,16 @@ const SECTIONS = [
     route: '/reference',
     title: 'Reference',
     kicker: 'Reference',
-    tagline: 'Tables, latency numbers and real-world architectures to reach for during back-of-the-envelope estimates.',
+    tagline:
+      'Tables, latency numbers and real-world architectures to reach for during back-of-the-envelope estimates in a system design interview.',
   },
   {
     id: 'about',
     route: '/about',
     title: 'About',
     kicker: 'About',
-    tagline: 'Who wrote the primer, who built this edition, and the licence that covers both.',
+    tagline:
+      'Who wrote the System Design Primer, who built this reading edition, and the Creative Commons licence that covers the content in both.',
   },
 ];
 
@@ -392,6 +396,56 @@ const DESCRIPTIONS = {
     'Engineering blogs from the companies you are interviewing with, the best source of current, real world design decisions and their trade-offs.',
   '/about/credits':
     'Sources and further reading behind this guide, including Hired in Tech, Cracking the Coding Interview, and the High Scalability archives.',
+
+  '/hld/availability-vs-consistency':
+    'The CAP theorem for system design interviews: a distributed system can only guarantee two of consistency, availability and partition tolerance. CP versus AP.',
+  '/hld/availability-patterns':
+    'Two patterns keep a system available: fail-over, as active-passive or active-active, and replication, as master-slave or master-master. The trade-offs of each.',
+  '/hld/domain-name-system':
+    'How DNS translates a domain name such as www.example.com into an IP address: NS, MX, A and CNAME records, DNS caching, and latency or geolocation based routing.',
+  '/hld/database':
+    'Databases in system design: relational databases with ACID, replication, federation, sharding and denormalization, versus NoSQL key-value and document stores.',
+  '/hld/case-studies':
+    'Eight worked system design interview questions with discussion, diagrams and code: Pastebin, Twitter, a web crawler, Mint, a social graph and scaling on AWS.',
+  '/hld/additional-interview-questions':
+    'More system design interview questions with links to worked solutions: a file sync service, a search engine, a recommendation system and an ad click aggregator.',
+  '/lld/interview-questions':
+    'Object-oriented design interview questions with worked solutions: design a deck of cards, a parking lot, a hash map, an online chat and a circular array.',
+
+  '/hld/performance-vs-scalability':
+    'Performance versus scalability in system design: a service is scalable when performance grows in proportion to the resources added. How to tell the two apart.',
+  '/hld/consistency-patterns':
+    'Consistency patterns for distributed systems: weak consistency, eventual consistency and strong consistency, and the workloads each one is the right fit for.',
+  '/hld/content-delivery-network':
+    'How a CDN works: push versus pull content delivery networks, serving static files from locations closer to the user, TTLs, and the trade-offs of each approach.',
+  '/hld/load-balancer':
+    'Load balancing in system design: layer 4 versus layer 7, round robin and least connections, active-passive failover, and the trade-offs of horizontal scaling.',
+  '/hld/reverse-proxy-web-server':
+    'Reverse proxy servers: centralizing internal services behind one interface, SSL termination, compression and caching, and how they differ from a load balancer.',
+  '/hld/application-layer':
+    'The application layer in system design: separating the web tier from the platform tier, microservices, service discovery, and scaling each layer independently.',
+  '/hld/cache':
+    'Caching in system design: client, CDN, web server, database and application caches, cache-aside, write-through and write-behind, and eviction with an LRU.',
+  '/hld/asynchronism':
+    'Asynchronism in system design: message queues, task queues and back pressure, and how moving expensive work off the request path cuts user-facing latency.',
+  '/hld/communication':
+    'Communication in system design: HTTP, TCP versus UDP, remote procedure calls and REST, and how to choose between them when you design a service API.',
+  '/lld/hash-map':
+    'Low level design of a hash map: the class design behind a hash table, hashing keys into buckets, collision resolution by chaining, and runnable Python code.',
+  '/lld/lru-cache':
+    'Low level design of an LRU cache: a hash map paired with a doubly linked list for O(1) lookup and eviction, with the class design and runnable Python code.',
+  '/lld/call-center':
+    'Low level design of a call center: modelling operators, supervisors and directors, routing a call to the first free employee, and the runnable Python classes.',
+  '/lld/deck-of-cards':
+    'Low level design of a deck of cards: modelling cards, suits and a shuffled deck, then extending it to blackjack, with a class diagram and runnable Python.',
+  '/lld/parking-lot':
+    'Low level design of a parking lot: modelling vehicles, spot sizes and levels, assigning and freeing spots, with the class design and runnable Python code.',
+  '/lld/online-chat':
+    'Low level design of an online chat service: modelling users, friend lists, private and group conversations, and adding messages, with runnable Python classes.',
+  '/reference/latency-numbers-every-programmer-should-know':
+    'Latency numbers every programmer should know: L1 and L2 cache reads, a main memory reference, an SSD read, a disk seek, and a round trip across the Atlantic.',
+  '/about/license':
+    'The open source licence covering the System Design Primer: Creative Commons Attribution 4.0 for the text, and what you may do with the code and the diagrams.',
 };
 
 const rm = (anchor, section, group, slug, short, omit) => ({ kind: 'readme', anchor, section, group, slug, short, omit });
@@ -593,9 +647,49 @@ fs.writeFileSync(
   'utf8',
 );
 
+// A sitemap's <lastmod> is only worth sending if it is true.  Stamping every
+// URL with the build time claims the whole site changed on every deploy, which
+// is exactly how a site teaches Google to ignore the field.  Each page is
+// hashed instead and its date only moves when its hash does; the ledger is
+// committed so the dates survive a fresh checkout on the build machine.
+const LEDGER = path.join(WEB, 'content-dates.json');
+const knownDates = fs.existsSync(LEDGER) ? JSON.parse(fs.readFileSync(LEDGER, 'utf8')) : {};
+const TODAY = new Date().toISOString().slice(0, 10);
+const ledger = {};
+
+function stamp(key, ...parts) {
+  const hash = crypto.createHash('sha256').update(parts.join('\u0000')).digest('hex').slice(0, 16);
+  const previous = knownDates[key];
+  ledger[key] = previous && previous.hash === hash ? previous : { hash, lastModified: TODAY };
+  return ledger[key].lastModified;
+}
+
+const newest = (...dates) => dates.sort().at(-1);
+
+for (const page of pages) {
+  page.lastModified = stamp(page.route, page.title, page.description, page.lede, page.body);
+}
+
+// A hub changes when its own copy changes or when anything under it does.
+const sectionDates = Object.fromEntries(
+  SECTIONS.map((section) => {
+    const own = stamp(section.route, section.title, section.tagline, sectionLead[section.id] || '');
+    const children = pages.filter((page) => page.section === section.id).map((page) => page.lastModified);
+    return [section.route, newest(own, ...children)];
+  }),
+);
+
+const homeDate = newest(
+  stamp('/', readmeLead.title, readmeLead.body),
+  ...Object.values(sectionDates),
+);
+
+fs.writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + '\n', 'utf8');
+
 const manifest = {
   generatedFrom: 'README.md + solutions/**',
   home: { title: readmeLead.title },
+  dates: { '/': homeDate, ...sectionDates },
   sections: SECTIONS.map((s) => ({ ...s, lead: sectionLead[s.id] || '' })),
   pages: pages.map(({ body, ...rest }) => rest),
   anchors,
@@ -686,7 +780,63 @@ for (const name of fs.readdirSync(IMG_OUT)) {
   const size = imageSize(file);
   if (size) sizes[name] = size;
 }
+// The primer's diagrams are 2000-3000px PNGs dropped into a 768px column, and
+// they are what a phone waits on: they were the largest contentful paint on
+// every page with a figure.  Each one gets WebP renditions at the widths the
+// layout can actually use, so the browser downloads a few tens of KB instead
+// of a megabyte.  The PNG stays as the <img> src, for anything without WebP.
+const RENDITION_WIDTHS = [640, 1024, 1536];
+
+/**
+ * Line art on flat colour is the case where a lossy encoder loses to PNG, so
+ * both WebP modes are tried and the smaller file wins.  A rendition is only
+ * kept if it actually beats the PNG on bytes: a <source> that matches always
+ * wins over the <img>, so an unconditional srcset could make a page heavier.
+ */
+async function renditions(name, size) {
+  const source = path.join(IMG_OUT, name);
+  const original = fs.statSync(source).size;
+  const stem = name.replace(/\.[^.]+$/, '');
+  const widths = [...new Set(RENDITION_WIDTHS.filter((w) => w < size.width).concat(size.width))].sort(
+    (a, b) => a - b,
+  );
+
+  const kept = [];
+  for (const width of widths) {
+    const file = `${stem}-${width}.webp`;
+    const target = path.join(IMG_OUT, file);
+    const resized = () => sharp(source).resize({ width, withoutEnlargement: true });
+    const [lossy, lossless] = await Promise.all([
+      resized().webp({ quality: 82, effort: 5 }).toBuffer(),
+      resized().webp({ lossless: true, effort: 5 }).toBuffer(),
+    ]);
+    const best = lossless.length < lossy.length ? lossless : lossy;
+    if (best.length >= original) {
+      fs.rmSync(target, { force: true });
+      continue;
+    }
+    fs.writeFileSync(target, best);
+    kept.push({ width, file });
+  }
+  return kept;
+}
+
+for (const [name, size] of Object.entries(sizes)) {
+  size.renditions = await renditions(name, size);
+}
+
 fs.writeFileSync(path.join(OUT, 'image-sizes.json'), JSON.stringify(sizes, null, 2), 'utf8');
+
+const pngBytes = Object.keys(sizes).reduce((a, n) => a + fs.statSync(path.join(IMG_OUT, n)).size, 0);
+const webpBytes = Object.values(sizes)
+  .flatMap((s) => s.renditions)
+  .reduce((a, r) => a + fs.statSync(path.join(IMG_OUT, r.file)).size, 0);
+const widest = Object.values(sizes).filter((s) => s.renditions.length);
+console.log(
+  `images: ${Object.keys(sizes).length} PNG (${(pngBytes / 1e6).toFixed(1)} MB) -> ` +
+    `${Object.values(sizes).flatMap((s) => s.renditions).length} WebP renditions ` +
+    `(${(webpBytes / 1e6).toFixed(1)} MB) across ${widest.length} images`,
+);
 
 // A flat index the client-side search dialog fetches once, on first open.
 const plainText = (md) =>

@@ -3,12 +3,13 @@ import { Geist, Space_Grotesk } from 'next/font/google';
 
 import AppShell from '@/components/AppShell';
 import ThemeProvider from '@/components/ThemeProvider';
-import { allSections, groupsInSection } from '@/lib/content';
+import { allSections, groupsInSection, manifest } from '@/lib/content';
 import type { NavSection } from '@/lib/nav';
 import {
   LICENSE,
   SITE_ALTERNATE_NAMES,
   SITE_DESCRIPTION,
+  SITE_ICONS,
   SITE_KEYWORDS,
   SITE_NAME,
   SITE_OG_IMAGE,
@@ -16,7 +17,7 @@ import {
   SITE_TITLE,
   SITE_URL,
   UPSTREAM,
-  absolute,
+  asset,
 } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import './globals.css';
@@ -25,8 +26,6 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 /** Headings only: a face with enough character to be an entry point on sight. */
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
-
-const OG_IMAGE = { ...SITE_OG_IMAGE, url: absolute(SITE_OG_IMAGE.pathname) };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -41,6 +40,20 @@ export const metadata: Metadata = {
   creator: 'Donne Martin',
   publisher: SITE_NAME,
   alternates: { canonical: '/' },
+  // Search engines only look for a favicon on the pages they crawl, so the
+  // icons have to be declared in the markup - shipping them in `public/` is
+  // not enough on its own.
+  manifest: asset(SITE_ICONS.manifest),
+  icons: {
+    icon: [
+      { url: asset(SITE_ICONS.ico), sizes: '48x48', type: 'image/x-icon' },
+      { url: asset(SITE_ICONS.svg), type: 'image/svg+xml' },
+      { url: asset(SITE_ICONS.png192), sizes: '192x192', type: 'image/png' },
+      { url: asset(SITE_ICONS.png512), sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: [{ url: asset(SITE_ICONS.ico) }],
+    apple: [{ url: asset(SITE_ICONS.apple), sizes: '180x180', type: 'image/png' }],
+  },
   robots: {
     index: true,
     follow: true,
@@ -52,14 +65,14 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
-    images: [OG_IMAGE],
+    images: [SITE_OG_IMAGE],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [OG_IMAGE.url],
+    images: [SITE_OG_IMAGE.url],
   },
   category: 'technology',
   verification: { google: 'IDix7jtEtUJ9Rx3H9YZPGKn-zI8Wf3GNoMcCIQFKMPc' },
@@ -94,6 +107,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     '@context': 'https://schema.org',
     '@graph': [
       {
+        // One publisher node the article, hub and website pages all point at,
+        // rather than three copies Google has to reconcile into one entity.
+        '@type': 'Organization',
+        '@id': `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: `${SITE_URL}/`,
+        description: SITE_DESCRIPTION,
+        logo: {
+          '@type': 'ImageObject',
+          '@id': `${SITE_URL}/#logo`,
+          url: `${SITE_URL}${SITE_ICONS.png512}`,
+          width: 512,
+          height: 512,
+          caption: SITE_NAME,
+        },
+        image: { '@id': `${SITE_URL}/#logo` },
+        sameAs: [UPSTREAM],
+      },
+      {
         '@type': 'WebSite',
         '@id': `${SITE_URL}/#website`,
         url: `${SITE_URL}/`,
@@ -102,6 +134,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         description: SITE_DESCRIPTION,
         inLanguage: 'en',
         license: LICENSE.url,
+        publisher: { '@id': `${SITE_URL}/#organization` },
       },
       {
         '@type': 'LearningResource',
@@ -123,12 +156,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ],
         keywords: SITE_KEYWORDS.join(', '),
         license: LICENSE.url,
-        provider: {
-          '@type': 'Organization',
-          name: SITE_NAME,
-          url: `${SITE_URL}/`,
-          sameAs: [UPSTREAM],
-        },
+        dateModified: manifest().dates['/'],
+        provider: { '@id': `${SITE_URL}/#organization` },
       },
     ],
   };

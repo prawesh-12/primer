@@ -11,7 +11,7 @@ export default function SiteFooter() {
     <footer className="bg-background/80 sticky bottom-0 z-30 mt-auto border-t backdrop-blur-md">
       <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-2 text-xs lg:px-8">
         <span>
-          Content © {LICENSE.holder}, licensed under{' '}
+          Primer text © {LICENSE.holder}, licensed under{' '}
           <a
             href={LICENSE.url}
             target="_blank"

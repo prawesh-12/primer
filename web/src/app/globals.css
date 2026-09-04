@@ -511,7 +511,14 @@ html {
   background-color: var(--foreground);
 }
 
+/* A figure is wrapped in <picture> to offer its WebP renditions, so centring
+   has to reach through the wrapper as well as apply to a bare <img>. */
+.prose picture {
+  display: block;
+}
+
 .prose p > img,
+.prose p > picture > img,
 .prose p[align='center'] img {
   display: block;
   margin: 0 auto;

@@ -7,7 +7,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings, { type Options as AutolinkOptions } from 'rehype-autolink-headings';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import { visit } from 'unist-util-visit';
+import { visit, SKIP } from 'unist-util-visit';
 import type { Element, Root, Text } from 'hast';
 
 import { UPSTREAM, asset } from './site';
@@ -24,10 +24,18 @@ export interface LinkContext {
   /** Heading ids that exist on this page. */
   ownAnchors: Set<string>;
   /** Image file name -> intrinsic size, so the browser can reserve the box. */
-  imageSizes: Record<string, { width: number; height: number }>;
+  imageSizes: Record<string, { width: number; height: number; renditions?: Rendition[] }>;
 }
 
 const IMGUR = /^https?:\/\/i\.imgur\.com\/([\w.-]+)$/;
+
+interface Rendition {
+  width: number;
+  file: string;
+}
+
+/** The prose column tops out at 48rem; below that a figure runs edge to edge. */
+const FIGURE_SIZES = '(max-width: 48rem) 100vw, 48rem';
 /** GitHub proxies remote images through camo; the hex path is the real URL. */
 const CAMO = /^https?:\/\/camo\.githubusercontent\.com\/[0-9a-f]+\/([0-9a-f]+)$/;
 const DROPPED = new Set(['CONTRIBUTING.md', 'TRANSLATIONS.md', 'LICENSE.txt']);
@@ -132,6 +140,30 @@ function rewriteLinks(ctx: LinkContext) {
             ctx.route === '/'
               ? 'System Design Primer cover diagram'
               : `${lastHeading || 'System design'} diagram`;
+        }
+
+        // Offer the WebP renditions first and keep the PNG as the fallback, so
+        // a phone fetches the rendition that fits its column rather than the
+        // full 3000px original.  Returning SKIP stops the walk from finding
+        // the <img> again inside the <picture> we just built around it.
+        if (size?.renditions?.length) {
+          const img: Element = { ...node, properties: { ...node.properties } };
+          node.tagName = 'picture';
+          node.properties = {};
+          node.children = [
+            {
+              type: 'element',
+              tagName: 'source',
+              properties: {
+                type: 'image/webp',
+                srcSet: size.renditions.map((r) => `${asset(`/images/${r.file}`)} ${r.width}w`).join(', '),
+                sizes: FIGURE_SIZES,
+              },
+              children: [],
+            },
+            img,
+          ];
+          return SKIP;
         }
       }
     });

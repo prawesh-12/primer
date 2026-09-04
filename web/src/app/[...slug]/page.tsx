@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { ExternalLinkIcon } from 'lucide-react';
 
 import Breadcrumb, { type Crumb } from '@/components/Breadcrumb';
+import InterviewNotes from '@/components/InterviewNotes';
 import Pager from '@/components/Pager';
 import Ownership from '@/components/Ownership';
 import Toc from '@/components/Toc';
@@ -19,7 +20,8 @@ import {
 } from '@/lib/content';
 import { renderMarkdown } from '@/lib/markdown';
 import { manifest } from '@/lib/content';
-import { LICENSE, SITE_KEYWORDS, SITE_NAME, SITE_OG_IMAGE, UPSTREAM, absolute } from '@/lib/site';
+import { COMMENTARY, COMMENTARY_ANCHOR, commentaryFor } from '@/lib/commentary';
+import { BUILDER, LICENSE, SITE_KEYWORDS, SITE_NAME, SITE_OG_IMAGE, UPSTREAM, absolute } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,12 +59,28 @@ const SECTION_SEO: Record<string, { title: string; keywords: string[] }> = {
   },
 };
 
-const PAGE_SEO_TITLE: Record<string, string> = {
-  '/getting-started/how-to-approach-a-system-design-interview-question': 'System Design Interview Approach',
-  '/hld/case-studies': 'System Design Interview Questions',
-  '/hld/case-studies/query-cache': 'Design a Query Cache',
-  '/hld/case-studies/scaling-aws': 'Design a System That Scales on AWS',
-  '/lld/interview-questions': 'Object-Oriented Design Interview Questions',
+/**
+ * Search results cut a title off around 60 characters, and the brand suffix
+ * costs 23 of them.  A page whose own heading is longer than that gets a
+ * shorter title here; `solo` drops the suffix instead, for the handful of
+ * headings that are themselves the phrase people search for.
+ */
+const PAGE_SEO_TITLE: Record<string, { title: string; solo?: boolean }> = {
+  '/getting-started/how-to-approach-a-system-design-interview-question': {
+    title: 'System Design Interview Approach',
+  },
+  '/hld/case-studies': { title: 'System Design Interview Questions' },
+  '/hld/case-studies/query-cache': { title: 'Design a Query Cache' },
+  '/hld/case-studies/scaling-aws': { title: 'Design a System That Scales on AWS' },
+  '/hld/case-studies/social-graph': { title: 'Design a Social Network Graph' },
+  '/hld/case-studies/sales-rank': { title: 'Design Amazon Sales Rank' },
+  '/hld/case-studies/twitter': { title: 'Design Twitter Timeline and Search' },
+  '/hld/additional-interview-questions': { title: 'More System Design Questions' },
+  '/lld/interview-questions': { title: 'Object-Oriented Design Questions' },
+  '/reference/latency-numbers-every-programmer-should-know': {
+    title: 'Latency Numbers Every Programmer Should Know',
+    solo: true,
+  },
 };
 
 const BEGINNER_ROADMAP = [
@@ -101,8 +119,21 @@ const BEGINNER_FAQ = [
   },
 ];
 
+// Commentary is keyed by route, and routes move.  Checking at module scope
+// means a rename fails the build rather than silently dropping a page's notes
+// or leaving a "where to next" link pointing at nothing.
+{
+  const routes = new Set(allPages().map((page) => page.route));
+  const missing = Object.keys(COMMENTARY).filter((route) => !routes.has(route));
+  const dangling = Object.entries(COMMENTARY).flatMap(([route, entry]) =>
+    (entry.related ?? []).filter((link) => !routes.has(link.route)).map((link) => `${route} -> ${link.route}`),
+  );
+  if (missing.length) throw new Error(`commentary for routes that no longer exist: ${missing.join(', ')}`);
+  if (dangling.length) throw new Error(`commentary links to routes that do not exist: ${dangling.join(', ')}`);
+}
+
 const unique = (values: string[]) => [...new Set(values.filter(Boolean))];
-const OG_IMAGE = { ...SITE_OG_IMAGE, url: absolute(SITE_OG_IMAGE.pathname) };
+const OG_IMAGE = SITE_OG_IMAGE;
 
 interface Params {
   params: Promise<{ slug: string[] }>;
@@ -140,6 +171,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       keywords,
       openGraph: {
         type: 'website',
+        siteName: SITE_NAME,
+        locale: 'en_US',
         title: `${title} · ${SITE_NAME}`,
         description: section.tagline,
         url: `${absolute(section.route)}/`,
@@ -152,14 +185,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { page } = found;
   const section = sectionById(page.section);
   const heading = HEADING_OVERRIDE[page.route] ?? page.title;
-  const seoTitle = PAGE_SEO_TITLE[page.route] ?? heading;
+  const override = PAGE_SEO_TITLE[page.route];
+  const seoTitle = override?.title ?? heading;
   return {
-    title: seoTitle,
+    title: override?.solo ? { absolute: seoTitle } : seoTitle,
     description: page.description,
     alternates: { canonical: `${page.route}/` },
     keywords: unique([page.title, page.navTitle, page.group, section?.title ?? '', ...SITE_KEYWORDS]),
     openGraph: {
       type: 'article',
+      siteName: SITE_NAME,
+      locale: 'en_US',
       title: `${seoTitle} · ${SITE_NAME}`,
       description: page.description,
       url: `${absolute(page.route)}/`,
@@ -352,6 +388,10 @@ export default async function CatchAll({ params }: Params) {
   const { page } = found;
   const section = sectionById(page.section)!;
   const heading = HEADING_OVERRIDE[page.route] ?? page.title;
+  const commentary = commentaryFor(page.route);
+  const headings = commentary
+    ? [...page.headings, { level: 2, text: commentary.heading, id: COMMENTARY_ANCHOR }]
+    : page.headings;
   const html = await renderPage(page);
   const { previous, next } = neighbours(page.route);
   const crumbs: Crumb[] = [
@@ -376,8 +416,13 @@ export default async function CatchAll({ params }: Params) {
       { '@type': 'Thing', name: 'system design interview preparation' },
     ],
     license: LICENSE.url,
+    datePublished: page.lastModified,
+    dateModified: page.lastModified,
     author: { '@type': 'Person', name: LICENSE.holder, url: UPSTREAM },
-    publisher: { '@type': 'Organization', name: SITE_NAME, url: absolute('/') },
+    // The chapter is his; the interview notes under it are not.  Saying so is
+    // both more accurate and the honest version of the attribution.
+    ...(commentaryFor(page.route) ? { contributor: { '@type': 'Person', name: 'prawesh-12', url: BUILDER } } : {}),
+    publisher: { '@id': `${absolute('/')}#organization` },
     articleSection: section.title,
     isPartOf: { '@id': `${absolute('/')}#learning-resource` },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${absolute(page.route)}/` },
@@ -424,12 +469,14 @@ export default async function CatchAll({ params }: Params) {
           dangerouslySetInnerHTML={{ __html: html }}
         />
 
+        {commentary && <InterviewNotes commentary={commentary} />}
+
         {page.route === '/about/license' && <Ownership />}
 
         <Pager previous={previous} next={next} />
       </article>
 
-      <Toc headings={page.headings} />
+      <Toc headings={headings} />
     </div>
   );
 }
