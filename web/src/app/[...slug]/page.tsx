@@ -197,15 +197,28 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-function breadcrumbJsonLd(items: Crumb[]) {
+/* Google requires `item` on every ListItem, so crumbs without a URL of their own
+   (the group label) are dropped and the trailing crumb gets the current page. */
+function breadcrumbJsonLd(items: Crumb[], currentUrl: string) {
+  const trail = items
+    .map((item, index) => ({
+      label: item.label,
+      url: item.href
+        ? `${absolute(item.href)}${item.href === '/' ? '' : '/'}`
+        : index === items.length - 1
+          ? currentUrl
+          : null,
+    }))
+    .filter((entry): entry is { label: string; url: string } => entry.url !== null);
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
+    itemListElement: trail.map((entry, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      name: item.label,
-      ...(item.href ? { item: `${absolute(item.href)}${item.href === '/' ? '' : '/'}` } : {}),
+      name: entry.label,
+      item: entry.url,
     })),
   };
 }
@@ -279,7 +292,7 @@ export default async function CatchAll({ params }: Params) {
       <div className="mx-auto w-full max-w-4xl px-4 py-12 lg:px-8 lg:py-16">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify([sectionJsonLd, breadcrumbJsonLd(crumbs)]) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([sectionJsonLd, breadcrumbJsonLd(crumbs, `${absolute(section.route)}/`)]) }}
         />
         <Breadcrumb items={crumbs.slice(0, -1)} />
 
@@ -422,7 +435,7 @@ export default async function CatchAll({ params }: Params) {
       <article className="w-full min-w-0 max-w-3xl py-12 lg:py-16">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify([articleJsonLd, breadcrumbJsonLd(crumbs)]) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([articleJsonLd, breadcrumbJsonLd(crumbs, `${absolute(page.route)}/`)]) }}
         />
         <Breadcrumb items={crumbs.slice(0, -1)} />
 
