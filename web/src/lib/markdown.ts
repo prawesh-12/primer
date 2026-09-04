@@ -74,9 +74,19 @@ function rewriteLinks(ctx: LinkContext) {
   };
 
   let firstImage = true;
+  let lastHeading = '';
 
   return () => (tree: Root) => {
     visit(tree, 'element', (node: Element) => {
+      if (/^h[1-6]$/.test(node.tagName)) {
+        lastHeading = node.children
+          .filter((child): child is Text => child.type === 'text')
+          .map((child) => child.value)
+          .join(' ')
+          .trim();
+        return;
+      }
+
       if (node.tagName === 'a') {
         const href = String(node.properties?.href ?? '');
         if (!href) return;
@@ -117,7 +127,12 @@ function rewriteLinks(ctx: LinkContext) {
         firstImage = false;
 
         node.properties!.decoding = 'async';
-        if (!node.properties!.alt) node.properties!.alt = '';
+        if (!String(node.properties!.alt ?? '').trim()) {
+          node.properties!.alt =
+            ctx.route === '/'
+              ? 'System Design Primer cover diagram'
+              : `${lastHeading || 'System design'} diagram`;
+        }
       }
     });
   };

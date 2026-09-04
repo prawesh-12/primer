@@ -137,7 +137,7 @@ function summarize(md, fallback) {
       .replace(/\s+/g, ' ')
       .trim();
 
-  const clip = (value) => (value.length > 200 ? value.slice(0, 197).trimEnd() + '...' : value);
+  const clip = (value) => (value.length > 160 ? value.slice(0, 157).trimEnd() + '...' : value);
 
   // Fenced code is never a summary, so drop it before looking at blocks.
   let fenced = false;
@@ -200,6 +200,7 @@ const readmeLead = (() => {
   const kept = [];
   for (const line of body.split('\n')) {
     if (LEAD_OMIT.some((re) => re.test(line))) omittedChunks.push(line);
+    else if (/^#\s+The System Design Primer\s*$/.test(line)) omittedChunks.push(line);
     else kept.push(line);
   }
   return { title, body: kept.join('\n').replace(/\n{3,}/g, '\n\n').trim() };
@@ -264,7 +265,8 @@ const SECTIONS = [
     route: '/getting-started',
     title: 'Getting Started',
     kicker: 'Start here',
-    tagline: 'Why the primer exists, how to plan your study time, and how to run the interview itself.',
+    tagline:
+      'System design for beginners: why the primer exists, how to plan your study time, and how to run the interview itself.',
   },
   {
     id: 'hld',
@@ -272,7 +274,7 @@ const SECTIONS = [
     title: 'High Level Design',
     kicker: 'HLD',
     tagline:
-      'System-level architecture: the trade-offs, the building blocks you assemble into a design, and full worked case studies.',
+      'High level system design: system architecture trade-offs, reusable building blocks, and full worked case studies.',
   },
   {
     id: 'lld',
@@ -280,7 +282,7 @@ const SECTIONS = [
     title: 'Low Level Design',
     kicker: 'LLD',
     tagline:
-      'Object-oriented design: classes, relationships and runnable code for the questions asked at the whiteboard.',
+      'Low level system design: object-oriented classes, relationships and runnable code for whiteboard interview questions.',
   },
   {
     id: 'reference',
@@ -358,7 +360,7 @@ const DESCRIPTIONS = {
   '/hld/case-studies/mint':
     'Design Mint.com: connecting bank accounts, categorising transactions, the budget data model, and running recurring extracts without hammering upstream APIs.',
   '/hld/case-studies/social-graph':
-    'Design the data structures for a social network: modelling the friend graph, finding the shortest path between two people, and sharding a graph that will not fit on one machine.',
+    'Design a social network graph: model friendships, find the shortest path between people, and shard a graph that will not fit on one machine.',
   '/hld/case-studies/query-cache':
     'Design a key-value store for a search engine: cache eviction with an LRU, sizing the cache, handling misses, and keeping cached queries fresh.',
   '/hld/case-studies/sales-rank':
@@ -367,9 +369,15 @@ const DESCRIPTIONS = {
     'Design a system that scales to millions of users on AWS: moving from a single box through vertical scaling, read replicas, caching, autoscaling and a CDN.',
 
   '/getting-started/motivation':
-    'Why learn system design: what the interview actually tests, how this guide is organised, and what to study first if you are starting from nothing.',
+    'System design for beginners: why learn system design, what interviews test, how this guide is organised, and what to study first.',
+  '/getting-started/index-of-system-design-topics':
+    'A beginner-friendly index of system design topics: scalability, databases, caching, queues, availability, consistency and the trade-offs behind each.',
+  '/getting-started/study-guide':
+    'System design study guide for beginners: what to review in a short, medium or long interview preparation plan using the System Design Primer.',
   '/getting-started/how-to-approach-a-system-design-interview-question':
     'A four step method for system design interviews: outline use cases and constraints, sketch a high level design, dive into components, then scale the design.',
+  '/hld/start-here':
+    'High level system design starts here: learn architecture fundamentals, trade-offs, scalability patterns, and the HLD building blocks used in interviews.',
   '/hld/latency-vs-throughput':
     'Latency is the time to perform an action; throughput is how many actions complete per unit of time. Why you aim for maximal throughput at acceptable latency.',
   '/hld/security':

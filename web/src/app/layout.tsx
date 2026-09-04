@@ -5,7 +5,18 @@ import AppShell from '@/components/AppShell';
 import ThemeProvider from '@/components/ThemeProvider';
 import { allSections, groupsInSection } from '@/lib/content';
 import type { NavSection } from '@/lib/nav';
-import { LICENSE, SITE_NAME, SITE_TAGLINE, SITE_URL, UPSTREAM, absolute } from '@/lib/site';
+import {
+  LICENSE,
+  SITE_ALTERNATE_NAMES,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_TITLE,
+  SITE_URL,
+  UPSTREAM,
+  absolute,
+} from '@/lib/site';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
@@ -14,27 +25,17 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 /** Headings only: a face with enough character to be an entry point on sight. */
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
 
+const OG_IMAGE = { url: absolute('/images/jj3A5N8.png'), width: 1234, height: 1666, alt: SITE_NAME };
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME}: High Level & Low Level System Design`,
+    default: SITE_TITLE,
     template: `%s · ${SITE_NAME}`,
   },
-  description: SITE_TAGLINE,
+  description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  keywords: [
-    'system design',
-    'system design interview',
-    'high level design',
-    'HLD',
-    'low level design',
-    'LLD',
-    'object oriented design',
-    'scalability',
-    'distributed systems',
-    'software architecture',
-    'system design primer',
-  ],
+  keywords: SITE_KEYWORDS,
   authors: [{ name: 'Donne Martin', url: UPSTREAM }],
   creator: 'Donne Martin',
   publisher: SITE_NAME,
@@ -47,16 +48,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
-    title: `${SITE_NAME}: High Level & Low Level System Design`,
-    description: SITE_TAGLINE,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     url: SITE_URL,
-    images: [{ url: absolute('/images/jj3A5N8.png'), width: 1200, height: 630, alt: SITE_NAME }],
+    images: [OG_IMAGE],
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME}: High Level & Low Level System Design`,
-    description: SITE_TAGLINE,
-    images: [absolute('/images/jj3A5N8.png')],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
   },
   category: 'technology',
   verification: { google: 'IDix7jtEtUJ9Rx3H9YZPGKn-zI8Wf3GNoMcCIQFKMPc' },
@@ -95,16 +97,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         '@id': `${SITE_URL}/#website`,
         url: `${SITE_URL}/`,
         name: SITE_NAME,
-        description: SITE_TAGLINE,
+        alternateName: SITE_ALTERNATE_NAMES,
+        description: SITE_DESCRIPTION,
         inLanguage: 'en',
         license: LICENSE.url,
       },
       {
-        '@type': 'EducationalOccupationalProgram',
-        name: 'System Design Primer: HLD & LLD tracks',
+        '@type': 'LearningResource',
+        '@id': `${SITE_URL}/#learning-resource`,
+        name: SITE_TITLE,
+        alternateName: SITE_ALTERNATE_NAMES,
         description: SITE_TAGLINE,
         url: `${SITE_URL}/`,
-        provider: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/` },
+        inLanguage: 'en',
+        isAccessibleForFree: true,
+        educationalLevel: ['Beginner', 'Intermediate'],
+        learningResourceType: ['Guide', 'Tutorial', 'Interview preparation'],
+        teaches: [
+          'system design for beginners',
+          'high level system design',
+          'low level design',
+          'distributed systems',
+          'scalable architecture',
+        ],
+        keywords: SITE_KEYWORDS.join(', '),
+        license: LICENSE.url,
+        provider: {
+          '@type': 'Organization',
+          name: SITE_NAME,
+          url: `${SITE_URL}/`,
+          sameAs: [UPSTREAM],
+        },
       },
     ],
   };

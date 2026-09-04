@@ -3,7 +3,15 @@ import type { Metadata } from 'next';
 import { ArrowRightIcon, CheckIcon } from 'lucide-react';
 
 import { allPages, allSections, pagesInSection, renderHomeLead } from '@/lib/content';
-import { SITE_NAME, SITE_TAGLINE } from '@/lib/site';
+import {
+  SITE_ALTERNATE_NAMES,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_TITLE,
+  absolute,
+} from '@/lib/site';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,11 +24,26 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+const OG_IMAGE = { url: absolute('/images/jj3A5N8.png'), width: 1234, height: 1666, alt: SITE_NAME };
+
 export const metadata: Metadata = {
-  title: `${SITE_NAME}: High Level & Low Level System Design`,
-  description:
-    'Learn how to design large-scale systems and prep for the system design interview. The System Design Primer, restructured into High Level Design (HLD) and Low Level Design (LLD) tracks with worked solutions.',
+  title: { absolute: SITE_TITLE },
+  description: SITE_DESCRIPTION,
   alternates: { canonical: '/' },
+  keywords: SITE_KEYWORDS,
+  openGraph: {
+    type: 'website',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: absolute('/'),
+    images: [OG_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
+  },
 };
 
 const TRACK_BLURB: Record<string, string[]> = {
@@ -42,6 +65,39 @@ export default async function Home() {
   const tracks = sections.filter((section) => section.id === 'hld' || section.id === 'lld');
   const rest = sections.filter((section) => section.id !== 'hld' && section.id !== 'lld');
   const caseStudies = allPages().filter((page) => page.route.startsWith('/hld/case-studies/'));
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebPage',
+        '@id': `${absolute('/')}#webpage`,
+        url: absolute('/'),
+        name: SITE_TITLE,
+        alternateName: SITE_ALTERNATE_NAMES,
+        description: SITE_DESCRIPTION,
+        inLanguage: 'en',
+        isPartOf: { '@id': `${absolute('/')}#website` },
+        about: [
+          { '@type': 'Thing', name: 'system design for beginners' },
+          { '@type': 'Thing', name: 'high level system design' },
+          { '@type': 'Thing', name: 'system design interview preparation' },
+        ],
+        mainEntity: { '@id': `${absolute('/')}#learning-resource` },
+      },
+      {
+        '@type': 'ItemList',
+        '@id': `${absolute('/')}#sections`,
+        name: 'System Design Primer learning tracks',
+        itemListElement: tracks.map((section, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: section.title,
+          description: section.tagline,
+          url: `${absolute(section.route)}/`,
+        })),
+      },
+    ],
+  };
 
   const stats = [
     { value: allPages().length, label: 'chapters' },
@@ -52,15 +108,18 @@ export default async function Home() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-16 lg:px-8 lg:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <section className="max-w-3xl">
         <Badge variant="secondary">Open source · CC BY 4.0</Badge>
         <h1 className="font-heading mt-5 text-[2.75rem] leading-[1.08] font-bold tracking-[-0.03em] text-balance sm:text-6xl">
-          Learn how to design large-scale systems.
+          System Design Primer for beginners.
         </h1>
         <p className="mt-5 max-w-[58ch] text-lg leading-relaxed text-pretty text-(color:--text-2)">
-          {SITE_TAGLINE} The original primer, restructured into two clearly separated tracks,
-          High Level Design and Low Level Design, so you always know where you are and what comes
-          next.
+          {SITE_TAGLINE} Start with high level system design fundamentals, then move through
+          HLD building blocks, low level design exercises and worked interview case studies.
         </p>
         <div className="mt-8 flex flex-wrap gap-2">
           <Button asChild size="lg">

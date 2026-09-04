@@ -7,7 +7,35 @@ export const BASE_PATH = new URL(SITE_URL).pathname.replace(/\/$/, '');
 
 export const SITE_NAME = 'System Design Primer';
 
-export const SITE_TAGLINE = 'Learn how to design large-scale systems. Prep for the system design interview.';
+export const SITE_TITLE = 'System Design Primer: System Design for Beginners';
+
+export const SITE_TAGLINE =
+  'Learn high level system design and low level design from the open source System Design Primer. Study scalable architecture, interview trade-offs and worked examples.';
+
+export const SITE_DESCRIPTION =
+  'System Design Primer for beginners: learn high level system design, low level design, scalable architecture, distributed systems and system design interview patterns.';
+
+export const SITE_KEYWORDS = [
+  'system design primer',
+  'system design for beginners',
+  'high level system design',
+  'high level design',
+  'HLD',
+  'low level design',
+  'LLD',
+  'system design interview',
+  'scalable system design',
+  'distributed systems',
+  'software architecture',
+  'object oriented design',
+];
+
+export const SITE_ALTERNATE_NAMES = [
+  'The System Design Primer',
+  'System Design for Beginners',
+  'High Level System Design Guide',
+  'HLD and LLD Primer',
+];
 
 /** The upstream repository every piece of content comes from. */
 export const UPSTREAM = 'https://github.com/donnemartin/system-design-primer';

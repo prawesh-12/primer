@@ -19,7 +19,7 @@ import {
 } from '@/lib/content';
 import { renderMarkdown } from '@/lib/markdown';
 import { manifest } from '@/lib/content';
-import { LICENSE, SITE_NAME, UPSTREAM, absolute } from '@/lib/site';
+import { LICENSE, SITE_KEYWORDS, SITE_NAME, UPSTREAM, absolute } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +33,39 @@ import { Separator } from '@/components/ui/separator';
 const HEADING_OVERRIDE: Record<string, string> = {
   '/about/license': 'License / Ownership',
 };
+
+const SECTION_SEO: Record<string, { title: string; keywords: string[] }> = {
+  'getting-started': {
+    title: 'System Design for Beginners',
+    keywords: ['system design for beginners', 'system design primer', 'system design study guide'],
+  },
+  hld: {
+    title: 'High Level System Design (HLD)',
+    keywords: ['high level system design', 'high level design', 'HLD system design'],
+  },
+  lld: {
+    title: 'Low Level Design (LLD)',
+    keywords: ['low level design', 'LLD', 'object oriented design interview'],
+  },
+  reference: {
+    title: 'System Design Reference',
+    keywords: ['system design reference', 'latency numbers', 'back of the envelope estimates'],
+  },
+  about: {
+    title: 'About the System Design Primer',
+    keywords: ['system design primer license', 'system design primer credits'],
+  },
+};
+
+const PAGE_SEO_TITLE: Record<string, string> = {
+  '/getting-started/how-to-approach-a-system-design-interview-question': 'System Design Interview Approach',
+  '/hld/case-studies': 'System Design Interview Questions',
+  '/hld/case-studies/query-cache': 'Design a Query Cache',
+  '/hld/case-studies/scaling-aws': 'Design a System That Scales on AWS',
+  '/lld/interview-questions': 'Object-Oriented Design Interview Questions',
+};
+
+const unique = (values: string[]) => [...new Set(values.filter(Boolean))];
 
 interface Params {
   params: Promise<{ slug: string[] }>;
@@ -60,34 +93,40 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
   if (found.kind === 'section') {
     const { section } = found;
+    const seo = SECTION_SEO[section.id];
+    const title = seo?.title ?? section.title;
+    const keywords = unique([...(seo?.keywords ?? []), ...SITE_KEYWORDS]);
     return {
-      title: section.title,
+      title,
       description: section.tagline,
       alternates: { canonical: `${section.route}/` },
+      keywords,
       openGraph: {
         type: 'website',
-        title: `${section.title} · ${SITE_NAME}`,
+        title: `${title} · ${SITE_NAME}`,
         description: section.tagline,
         url: `${absolute(section.route)}/`,
       },
+      twitter: { card: 'summary_large_image', title, description: section.tagline },
     };
   }
 
   const { page } = found;
   const section = sectionById(page.section);
   const heading = HEADING_OVERRIDE[page.route] ?? page.title;
+  const seoTitle = PAGE_SEO_TITLE[page.route] ?? heading;
   return {
-    title: heading,
+    title: seoTitle,
     description: page.description,
     alternates: { canonical: `${page.route}/` },
-    keywords: [page.title, page.navTitle, section?.title ?? '', 'system design'].filter(Boolean),
+    keywords: unique([page.title, page.navTitle, page.group, section?.title ?? '', ...SITE_KEYWORDS]),
     openGraph: {
       type: 'article',
-      title: `${heading} · ${SITE_NAME}`,
+      title: `${seoTitle} · ${SITE_NAME}`,
       description: page.description,
       url: `${absolute(page.route)}/`,
     },
-    twitter: { card: 'summary_large_image', title: heading, description: page.description },
+    twitter: { card: 'summary_large_image', title: seoTitle, description: page.description },
   };
 }
 
@@ -112,6 +151,7 @@ export default async function CatchAll({ params }: Params) {
   if (found.kind === 'section') {
     const { section } = found;
     const groups = groupsInSection(section.id);
+    const sectionPages = groups.flatMap((group) => group.pages);
     const crumbs: Crumb[] = [{ label: 'Home', href: '/' }, { label: section.title }];
     const lead = section.lead
       ? await renderMarkdown(section.lead, {
@@ -123,12 +163,33 @@ export default async function CatchAll({ params }: Params) {
           imageSizes: imageSizes(),
         })
       : '';
+    const sectionJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${absolute(section.route)}/#collection`,
+      url: `${absolute(section.route)}/`,
+      name: SECTION_SEO[section.id]?.title ?? section.title,
+      description: section.tagline,
+      inLanguage: 'en',
+      isPartOf: { '@id': `${absolute('/')}#website` },
+      mainEntity: {
+        '@type': 'ItemList',
+        name: `${section.title} chapters`,
+        itemListElement: sectionPages.map((page, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: page.navTitle,
+          description: page.description,
+          url: `${absolute(page.route)}/`,
+        })),
+      },
+    };
 
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-12 lg:px-8 lg:py-16">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(crumbs)) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([sectionJsonLd, breadcrumbJsonLd(crumbs)]) }}
         />
         <Breadcrumb items={crumbs.slice(0, -1)} />
 
@@ -198,10 +259,17 @@ export default async function CatchAll({ params }: Params) {
     url: `${absolute(page.route)}/`,
     inLanguage: 'en',
     isAccessibleForFree: true,
+    keywords: unique([page.title, page.navTitle, page.group, section.title, ...SITE_KEYWORDS]).join(', '),
+    about: [
+      { '@type': 'Thing', name: section.title },
+      { '@type': 'Thing', name: page.group },
+      { '@type': 'Thing', name: 'system design interview preparation' },
+    ],
     license: LICENSE.url,
     author: { '@type': 'Person', name: LICENSE.holder, url: UPSTREAM },
     publisher: { '@type': 'Organization', name: SITE_NAME, url: absolute('/') },
     articleSection: section.title,
+    isPartOf: { '@id': `${absolute('/')}#learning-resource` },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${absolute(page.route)}/` },
   };
 
