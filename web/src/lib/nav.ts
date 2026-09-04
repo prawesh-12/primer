@@ -1,5 +1,3 @@
-/** The navigation tree the layout hands down to the shell. */
-
 export interface NavPage {
   route: string;
   navTitle: string;

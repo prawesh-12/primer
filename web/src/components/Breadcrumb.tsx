@@ -20,7 +20,7 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
     <BreadcrumbRoot className="mb-4">
       <BreadcrumbList>
         {items.map((item, index) => (
-          /* The separator is a sibling <li>, never a child of the item. */
+          /* A sibling <li>, never a child of the item. */
           <Fragment key={`${item.label}-${index}`}>
             <BreadcrumbItem>
               {item.href ? (

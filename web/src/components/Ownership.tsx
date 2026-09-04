@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-/** Where this reading edition itself is developed. */
 const WEB_REPO = 'https://github.com/prawesh-12/primer';
 
 const link = 'text-link hover:text-link-hover underline underline-offset-4 transition-colors';

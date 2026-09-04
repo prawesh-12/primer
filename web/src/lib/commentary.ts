@@ -1,26 +1,14 @@
-/**
- * Original commentary written for this edition.
- *
- * Every other word on this site is Donne Martin's, reproduced verbatim —
- * `scripts/verify-fidelity.mjs` fails the build if a single line of the primer
- * is dropped or invented, which is exactly why this file exists outside
- * `content/`.  The primer explains what the pieces are; it does not say how
- * each one is examined in an interview, and that is the gap these notes fill.
- *
- * Two rules for anything added here.  It has to be something a reader could
- * not get from the chapter above it, and it has to be specific enough to be
- * wrong — "say what breaks before you shard" is a claim; "consider your
- * requirements carefully" is filler.
- */
+// Original writing for this edition, kept out of `content/` on purpose:
+// verify-fidelity.mjs fails the build on any line under there that is not
+// upstream's. The primer says what the pieces are; these notes say how each
+// one gets examined in an interview.
 
 export interface CommentaryPoint {
-  /** The lead-in, set in the reader's eye as the claim being made. */
   term: string;
   detail: string;
 }
 
 export interface Commentary {
-  /** Rendered as the section's <h2>, and added to the table of contents. */
   heading: string;
   body: string[];
   points: CommentaryPoint[];
@@ -30,7 +18,6 @@ export interface Commentary {
 export const COMMENTARY_ANCHOR = 'interview-notes';
 
 export const COMMENTARY: Record<string, Commentary> = {
-  /* ------------------------------------------------------- getting started */
 
   '/getting-started/motivation': {
     heading: 'How to use this guide',
@@ -156,7 +143,6 @@ export const COMMENTARY: Record<string, Commentary> = {
     ],
   },
 
-  /* ------------------------------------------------------ HLD fundamentals */
 
   '/hld/start-here': {
     heading: 'What the fundamentals are for',
@@ -318,7 +304,6 @@ export const COMMENTARY: Record<string, Commentary> = {
     ],
   },
 
-  /* ----------------------------------------------------- HLD building blocks */
 
   '/hld/domain-name-system': {
     heading: 'Where DNS shows up in an answer',
@@ -604,7 +589,6 @@ export const COMMENTARY: Record<string, Commentary> = {
     ],
   },
 
-  /* --------------------------------------------------------- HLD case studies */
 
   '/hld/case-studies': {
     heading: 'How to work through a case study',
@@ -892,7 +876,6 @@ export const COMMENTARY: Record<string, Commentary> = {
     ],
   },
 
-  /* --------------------------------------------------------------------- LLD */
 
   '/lld/interview-questions': {
     heading: 'What an object-oriented design round grades',
@@ -1086,7 +1069,6 @@ export const COMMENTARY: Record<string, Commentary> = {
     ],
   },
 
-  /* --------------------------------------------------------------- reference */
 
   '/reference/powers-of-two-table': {
     heading: 'Using this under pressure',

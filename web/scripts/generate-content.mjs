@@ -1,13 +1,6 @@
 #!/usr/bin/env node
-/**
- * Split the primer's markdown sources into one file per page.
- *
- * The markdown is the single source of truth.  This script only *splits* it,
- * orders the pieces into sections, and records where every original heading
- * anchor now lives.  Not one sentence of the original text is rewritten.
- *
- *     node scripts/generate-content.mjs   ->  ./content/**.md + ./content/manifest.json
- */
+// Splits the primer's sources into ./content/**.md + ./content/manifest.json.
+// Only splits and re-levels: no sentence of the original text is rewritten.
 
 import crypto from 'node:crypto';
 import sharp from 'sharp';
@@ -22,11 +15,8 @@ const OUT = path.join(WEB, 'content');
 
 const read = (...p) => fs.readFileSync(path.join(ROOT, ...p), 'utf8');
 
-/**
- * The primer's own text is not kept in this repository.  The upstream repo is
- * the single reference for it, and the source is pulled from there on demand
- * into a gitignored cache so a build never needs a local copy.
- */
+// The primer's text is not kept in this repo; it is pulled from upstream
+// into a gitignored cache.
 const UPSTREAM_RAW = 'https://raw.githubusercontent.com/donnemartin/system-design-primer/master';
 const CACHE = path.join(ROOT, '.upstream');
 
@@ -46,20 +36,13 @@ async function upstream(rel) {
 
 const primerReadme = await upstream('README.md');
 
-/** Everything deliberately left unpublished, recorded for the fidelity check. */
 const omittedChunks = [];
 
-/**
- * Lines dropped from the README's opening block.  Both point at files this
- * edition does not carry, the translated READMEs and TRANSLATIONS.md, and it
- * is published in English only.
- */
+// Both point at translated READMEs this edition does not carry.
 const LEAD_OMIT = [/^\*\[English\]\(/, /^\*\*Help \[translate\]\(/];
 const slugify = (text) => new GithubSlugger().slug(text);
 
-// ---------------------------------------------------------------------------
-// markdown helpers (all fence aware)
-// ---------------------------------------------------------------------------
+// Markdown helpers, all fence aware.
 
 function eachLine(md, fn) {
   let fenced = false;
@@ -69,7 +52,6 @@ function eachLine(md, fn) {
   });
 }
 
-/** Split markdown on a heading level, returning [lead, blocks]. */
 function splitOnHeading(md, level) {
   const marker = '#'.repeat(level) + ' ';
   const lead = [];
@@ -91,7 +73,6 @@ function splitOnHeading(md, level) {
   return [lead.join('\n').trim(), blocks];
 }
 
-/** Every heading in a document, in order, as {level, text}. */
 function headings(md) {
   const found = [];
   eachLine(md, (line, fenced) => {
@@ -102,7 +83,6 @@ function headings(md) {
   return found;
 }
 
-/** Pull the first heading off a block; return {title, body}. */
 function takeTitle(md) {
   const lines = md.split('\n');
   const m = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(lines[0]);
@@ -110,7 +90,6 @@ function takeTitle(md) {
   return { title: m[2].trim(), body: lines.slice(1).join('\n').trim() };
 }
 
-/** Re-level a page body so its shallowest heading becomes an <h2>. */
 function normalizeHeadings(md) {
   const levels = headings(md).map((h) => h.level);
   if (!levels.length) return md;
@@ -124,11 +103,8 @@ function normalizeHeadings(md) {
   }).join('\n');
 }
 
-/**
- * A page's own summary line, taken from the source and never invented:
- *   - `lede`        the primer's own blockquote summary, shown under the title
- *   - `description` the lede, else the page's opening prose, for meta tags
- */
+// `lede` is the primer's own blockquote summary; `description` falls back to
+// the opening prose. Both come from the source, never invented.
 function summarize(md, fallback) {
   const plain = (value) =>
     value
@@ -141,7 +117,6 @@ function summarize(md, fallback) {
 
   const clip = (value) => (value.length > 160 ? value.slice(0, 157).trimEnd() + '...' : value);
 
-  // Fenced code is never a summary, so drop it before looking at blocks.
   let fenced = false;
   const prose = md
     .split('\n')
@@ -192,9 +167,6 @@ function summarize(md, fallback) {
   return { lede, description };
 }
 
-// ---------------------------------------------------------------------------
-// sources
-// ---------------------------------------------------------------------------
 
 const readmeLead = (() => {
   const [lead] = splitOnHeading(primerReadme, 2);
@@ -257,9 +229,7 @@ function notebookSource(dir, file) {
   return parts.join('\n\n');
 }
 
-// ---------------------------------------------------------------------------
-// the site map: every page, in reading order
-// ---------------------------------------------------------------------------
+// Every page, in reading order.
 
 const SECTIONS = [
   {
@@ -304,17 +274,8 @@ const SECTIONS = [
   },
 ];
 
-/**
- * Remove a named sub-section, heading and body, from an extracted slice.
- * Used where a page carries something that only makes sense in the upstream
- * repository.  Fenced code is skipped so a `#` inside a block is never read
- * as a heading.
- */
-/**
- * README sections this edition deliberately does not publish.  Declared here so
- * the fidelity check can tell a removal that was chosen from one that was an
- * accident; drop an anchor from this list and the section comes back.
- */
+// Declared here so the fidelity check can tell a chosen removal from an
+// accidental one. Drop an anchor and the section comes back.
 const OMITTED_SECTIONS = [
   'anki-flashcards',
   'contributing',
@@ -322,6 +283,7 @@ const OMITTED_SECTIONS = [
   'contact-info',
 ];
 
+// Fenced code is skipped so a `#` inside a block is never read as a heading.
 function dropSubsection(md, heading) {
   const lines = md.split('\n');
   const out = [];
@@ -347,13 +309,8 @@ function dropSubsection(md, heading) {
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-/**
- * Meta descriptions, written per page instead of clipped from the opening
- * paragraph.  The eight case studies otherwise share one boilerplate line, and
- * several reference pages summarise to little more than their own title, which
- * makes them look like near duplicates to a crawler.  Metadata only: no
- * published text changes, so the fidelity check is unaffected.
- */
+// Hand-written rather than clipped from the opening paragraph, which left
+// several pages looking like near duplicates. Metadata only.
 const DESCRIPTIONS = {
   '/hld/case-studies/pastebin':
     'Design Pastebin.com or Bit.ly: use cases, constraints, back-of-the-envelope estimates, API design, data model, and how to scale the read-heavy path.',
@@ -462,7 +419,6 @@ const ood = (dir, file, section, group, slug, short) => ({
 });
 
 const PAGES = [
-  // ----- Getting started ---------------------------------------------------
   rm('motivation', 'getting-started', 'Orientation', 'motivation', undefined, [
     'Learn from the open source community',
   ]),
@@ -475,7 +431,6 @@ const PAGES = [
     'how-to-approach-a-system-design-interview-question',
   ),
 
-  // ----- HLD: fundamentals -------------------------------------------------
   rm('system-design-topics-start-here', 'hld', 'Fundamentals', 'start-here'),
   rm('performance-vs-scalability', 'hld', 'Fundamentals', 'performance-vs-scalability'),
   rm('latency-vs-throughput', 'hld', 'Fundamentals', 'latency-vs-throughput'),
@@ -483,7 +438,6 @@ const PAGES = [
   rm('consistency-patterns', 'hld', 'Fundamentals', 'consistency-patterns'),
   rm('availability-patterns', 'hld', 'Fundamentals', 'availability-patterns'),
 
-  // ----- HLD: building blocks ---------------------------------------------
   rm('domain-name-system', 'hld', 'Building blocks', 'domain-name-system'),
   rm('content-delivery-network', 'hld', 'Building blocks', 'content-delivery-network'),
   rm('load-balancer', 'hld', 'Building blocks', 'load-balancer'),
@@ -495,7 +449,6 @@ const PAGES = [
   rm('communication', 'hld', 'Building blocks', 'communication'),
   rm('security', 'hld', 'Building blocks', 'security'),
 
-  // ----- HLD: case studies -------------------------------------------------
   rm('system-design-interview-questions-with-solutions', 'hld', 'Case studies', 'case-studies'),
   sd('pastebin', 'hld', 'Case studies', 'case-studies/pastebin', 'Design Pastebin.com (or Bit.ly)'),
   sd('twitter', 'hld', 'Case studies', 'case-studies/twitter', 'Design the Twitter timeline and search'),
@@ -507,7 +460,6 @@ const PAGES = [
   sd('scaling_aws', 'hld', 'Case studies', 'case-studies/scaling-aws', 'Design a system that scales to millions of users on AWS'),
   ax('additional-system-design-interview-questions', 'hld', 'Case studies', 'additional-interview-questions'),
 
-  // ----- LLD ---------------------------------------------------------------
   rm('object-oriented-design-interview-questions-with-solutions', 'lld', 'Overview', 'interview-questions'),
   ood('hash_table', 'hash_map.ipynb', 'lld', 'Solutions', 'hash-map', 'Design a hash map'),
   ood('lru_cache', 'lru_cache.ipynb', 'lld', 'Solutions', 'lru-cache', 'Design a least recently used cache'),
@@ -516,21 +468,16 @@ const PAGES = [
   ood('parking_lot', 'parking_lot.ipynb', 'lld', 'Solutions', 'parking-lot', 'Design a parking lot'),
   ood('online_chat', 'online_chat.ipynb', 'lld', 'Solutions', 'online-chat', 'Design a chat server'),
 
-  // ----- Reference ---------------------------------------------------------
   ax('powers-of-two-table', 'reference', 'Estimation', 'powers-of-two-table'),
   ax('latency-numbers-every-programmer-should-know', 'reference', 'Estimation', 'latency-numbers-every-programmer-should-know'),
   ax('real-world-architectures', 'reference', 'In the wild', 'real-world-architectures'),
   ax('company-architectures', 'reference', 'In the wild', 'company-architectures'),
   ax('company-engineering-blogs', 'reference', 'In the wild', 'company-engineering-blogs'),
 
-  // ----- About -------------------------------------------------------------
   rm('credits', 'about', 'Project', 'credits'),
   rm('license', 'about', 'Project', 'license', 'License / Ownership'),
 ];
 
-// ---------------------------------------------------------------------------
-// build
-// ---------------------------------------------------------------------------
 
 function buildPage(entry) {
   const route = `${SECTIONS.find((s) => s.id === entry.section).route}/${entry.slug}`;
@@ -581,10 +528,8 @@ function buildPage(entry) {
 
 const pages = PAGES.map(buildPage);
 
-// The reference hub carries the Appendix's own intro paragraph.
 const sectionLead = { reference: appendixSections.lead };
 
-// Anchor map: every original README heading -> the route it now lives on.
 const anchors = {};
 for (const entry of PAGES) {
   if (entry.kind !== 'readme' && entry.kind !== 'appendix') continue;
@@ -595,17 +540,13 @@ for (const entry of PAGES) {
     if (!(slug in anchors)) anchors[slug] = page.route;
   }
 }
-// Sections that are not pages of their own still need somewhere to point.
 anchors.appendix = anchors.appendix || '/reference';
 for (const s of SECTIONS) anchors[s.id] = anchors[s.id] || s.route;
 
-// The anchor a page used to answer to as a whole: a link to it is a link to
-// the page itself, not to a fragment inside it.
 const topAnchors = {};
 for (const page of pages) topAnchors[page.route] = page.topAnchor;
 topAnchors['/reference'] = 'appendix';
 
-// Solution + notebook routes, keyed by their repo path, for relative links.
 const files = {};
 for (const [i, entry] of PAGES.entries()) {
   if (entry.kind === 'solution') files[`solutions/system_design/${entry.dir}/README.md`] = pages[i].route;
@@ -613,9 +554,6 @@ for (const [i, entry] of PAGES.entries()) {
     files[`solutions/object_oriented_design/${entry.dir}/${entry.file}`] = pages[i].route;
 }
 
-// ---------------------------------------------------------------------------
-// write
-// ---------------------------------------------------------------------------
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
@@ -647,11 +585,9 @@ fs.writeFileSync(
   'utf8',
 );
 
-// A sitemap's <lastmod> is only worth sending if it is true.  Stamping every
-// URL with the build time claims the whole site changed on every deploy, which
-// is exactly how a site teaches Google to ignore the field.  Each page is
-// hashed instead and its date only moves when its hash does; the ledger is
-// committed so the dates survive a fresh checkout on the build machine.
+// <lastmod> is only worth sending if it is true, so a page's date moves only
+// when its content hash does. The ledger is committed so the dates survive a
+// fresh checkout on the build machine.
 const LEDGER = path.join(WEB, 'content-dates.json');
 const knownDates = fs.existsSync(LEDGER) ? JSON.parse(fs.readFileSync(LEDGER, 'utf8')) : {};
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -670,7 +606,6 @@ for (const page of pages) {
   page.lastModified = stamp(page.route, page.title, page.description, page.lede, page.body);
 }
 
-// A hub changes when its own copy changes or when anything under it does.
 const sectionDates = Object.fromEntries(
   SECTIONS.map((section) => {
     const own = stamp(section.route, section.title, section.tagline, sectionLead[section.id] || '');
@@ -705,8 +640,6 @@ fs.writeFileSync(path.join(OUT, 'omitted.json'), JSON.stringify(omittedChunks, n
 
 fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
 
-// Keep public/images in sync with the repo's own images folder.  The handful
-// of diagrams the solutions host on imgur are committed alongside them.
 const IMG_SRC = path.join(ROOT, 'images');
 const IMG_OUT = path.join(WEB, 'public', 'images');
 fs.mkdirSync(IMG_OUT, { recursive: true });
@@ -720,9 +653,7 @@ for (const name of fs.readdirSync(IMG_SRC)) {
   copied += 1;
 }
 
-// A few diagrams in the solutions are hosted on imgur (and one behind
-// GitHub's camo proxy) rather than committed to the repo.  Pull anything
-// referenced but missing so the site never hotlinks a third party.
+// Pull anything referenced but not committed, so the site never hotlinks.
 const remote = new Set();
 for (const page of pages) {
   for (const [, url] of page.body.matchAll(/https?:\/\/i\.imgur\.com\/([\w.-]+)/g) ) remote.add(url);
@@ -746,7 +677,6 @@ for (const name of remote) {
   fetched += 1;
 }
 
-/** Intrinsic size of a PNG or JPEG, straight out of the file header. */
 function imageSize(file) {
   const buffer = fs.readFileSync(file);
   if (buffer.length > 24 && buffer.readUInt32BE(0) === 0x89504e47) {
@@ -761,7 +691,6 @@ function imageSize(file) {
       }
       const marker = buffer[offset + 1];
       const length = buffer.readUInt16BE(offset + 2);
-      // SOF0..SOF15, skipping the four that are not frame headers
       if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
         return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
       }
@@ -771,8 +700,6 @@ function imageSize(file) {
   return null;
 }
 
-// Intrinsic sizes let the browser reserve the right box before an image
-// arrives, which is the difference between a stable page and a jumping one.
 const sizes = {};
 for (const name of fs.readdirSync(IMG_OUT)) {
   const file = path.join(IMG_OUT, name);
@@ -780,19 +707,11 @@ for (const name of fs.readdirSync(IMG_OUT)) {
   const size = imageSize(file);
   if (size) sizes[name] = size;
 }
-// The primer's diagrams are 2000-3000px PNGs dropped into a 768px column, and
-// they are what a phone waits on: they were the largest contentful paint on
-// every page with a figure.  Each one gets WebP renditions at the widths the
-// layout can actually use, so the browser downloads a few tens of KB instead
-// of a megabyte.  The PNG stays as the <img> src, for anything without WebP.
 const RENDITION_WIDTHS = [640, 1024, 1536];
 
-/**
- * Line art on flat colour is the case where a lossy encoder loses to PNG, so
- * both WebP modes are tried and the smaller file wins.  A rendition is only
- * kept if it actually beats the PNG on bytes: a <source> that matches always
- * wins over the <img>, so an unconditional srcset could make a page heavier.
- */
+// Line art on flat colour is where a lossy encoder loses to PNG, so both
+// modes are tried and the smaller wins. A rendition is kept only if it beats
+// the PNG: a matching <source> always wins over the <img>.
 async function renditions(name, size) {
   const source = path.join(IMG_OUT, name);
   const original = fs.statSync(source).size;
@@ -838,7 +757,6 @@ console.log(
     `(${(webpBytes / 1e6).toFixed(1)} MB) across ${widest.length} images`,
 );
 
-// A flat index the client-side search dialog fetches once, on first open.
 const plainText = (md) =>
   md
     .replace(/```[\s\S]*?```/g, ' ')

@@ -5,14 +5,8 @@ import { COMMENTARY_ANCHOR, type Commentary } from '@/lib/commentary';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-/**
- * The one block on a chapter page that is not the primer's writing.
- *
- * It is deliberately marked as such — a badge, a rule above it, and a
- * different type treatment from the prose — because the rest of the page is
- * reproduced verbatim under CC BY and a reader has to be able to tell the two
- * apart at a glance.
- */
+// The only block on a chapter page that is not the primer's writing, and
+// marked as such: the rest of the page is reproduced verbatim under CC BY.
 export default function InterviewNotes({ commentary }: { commentary: Commentary }) {
   return (
     <section aria-labelledby={COMMENTARY_ANCHOR} className="mt-16">

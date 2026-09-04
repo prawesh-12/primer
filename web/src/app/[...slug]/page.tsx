@@ -27,11 +27,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-/**
- * Headings shown to the reader that differ from the frontmatter title.  The
- * title itself has to stay verbatim — verify-fidelity.mjs counts it as one of
- * the published lines — so the display name is overridden here instead.
- */
+// The frontmatter title has to stay verbatim: verify-fidelity.mjs counts it
+// as one of the published lines. Override the displayed heading instead.
 const HEADING_OVERRIDE: Record<string, string> = {
   '/about/license': 'License / Ownership',
 };
@@ -59,12 +56,8 @@ const SECTION_SEO: Record<string, { title: string; keywords: string[] }> = {
   },
 };
 
-/**
- * Search results cut a title off around 60 characters, and the brand suffix
- * costs 23 of them.  A page whose own heading is longer than that gets a
- * shorter title here; `solo` drops the suffix instead, for the handful of
- * headings that are themselves the phrase people search for.
- */
+// Search results cut a title off around 60 characters and the brand suffix
+// costs 23 of them. `solo` drops the suffix rather than shortening.
 const PAGE_SEO_TITLE: Record<string, { title: string; solo?: boolean }> = {
   '/getting-started/how-to-approach-a-system-design-interview-question': {
     title: 'System Design Interview Approach',
@@ -119,9 +112,8 @@ const BEGINNER_FAQ = [
   },
 ];
 
-// Commentary is keyed by route, and routes move.  Checking at module scope
-// means a rename fails the build rather than silently dropping a page's notes
-// or leaving a "where to next" link pointing at nothing.
+// Commentary is keyed by route, so a rename should fail the build rather
+// than silently drop a page's notes.
 {
   const routes = new Set(allPages().map((page) => page.route));
   const missing = Object.keys(COMMENTARY).filter((route) => !routes.has(route));
@@ -222,7 +214,6 @@ export default async function CatchAll({ params }: Params) {
   const found = resolve((await params).slug);
   if (!found) notFound();
 
-  /* ------------------------------------------------------- section hub */
   if (found.kind === 'section') {
     const { section } = found;
     const groups = groupsInSection(section.id);
@@ -384,7 +375,6 @@ export default async function CatchAll({ params }: Params) {
     );
   }
 
-  /* ------------------------------------------------------- content page */
   const { page } = found;
   const section = sectionById(page.section)!;
   const heading = HEADING_OVERRIDE[page.route] ?? page.title;
@@ -419,8 +409,7 @@ export default async function CatchAll({ params }: Params) {
     datePublished: page.lastModified,
     dateModified: page.lastModified,
     author: { '@type': 'Person', name: LICENSE.holder, url: UPSTREAM },
-    // The chapter is his; the interview notes under it are not.  Saying so is
-    // both more accurate and the honest version of the attribution.
+    // The chapter is his; the interview notes under it are not.
     ...(commentaryFor(page.route) ? { contributor: { '@type': 'Person', name: 'prawesh-12', url: BUILDER } } : {}),
     publisher: { '@id': `${absolute('/')}#organization` },
     articleSection: section.title,

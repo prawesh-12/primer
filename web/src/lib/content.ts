@@ -26,7 +26,7 @@ export interface PageMeta {
   sourceAnchor: string | null;
   topAnchor: string;
   headings: Heading[];
-  /** ISO date the page's own text last changed; see content-dates.json. */
+  /** ISO date, from content-dates.json. */
   lastModified: string;
 }
 
@@ -40,7 +40,7 @@ export interface SectionMeta {
 }
 
 interface Manifest {
-  /** Hub routes ('/' and each section) to the date anything under them changed. */
+  /** Hub route -> the date anything under it last changed. */
   dates: Record<string, string>;
   sections: SectionMeta[];
   pages: PageMeta[];
@@ -83,7 +83,6 @@ export const pagesInSection = (id: string): PageMeta[] =>
 export const pageByRoute = (route: string): PageMeta | undefined =>
   allPages().find((page) => page.route === route);
 
-/** Section pages bucketed into their named groups, in reading order. */
 export function groupsInSection(id: string): { name: string; pages: PageMeta[] }[] {
   const groups: { name: string; pages: PageMeta[] }[] = [];
   for (const page of pagesInSection(id)) {
@@ -94,7 +93,6 @@ export function groupsInSection(id: string): { name: string; pages: PageMeta[] }
   return groups;
 }
 
-/** Flat reading order across the whole site, for previous/next links. */
 export function readingOrder(): PageMeta[] {
   const order = allSections().map((section) => section.id);
   return [...allPages()].sort((a, b) => order.indexOf(a.section) - order.indexOf(b.section));
@@ -115,7 +113,6 @@ export function rawBody(page: PageMeta): string {
   return matter(fs.readFileSync(fileFor(page), 'utf8')).content;
 }
 
-/** Render one page to HTML, with every original link pointed at its new home. */
 export async function renderPage(page: PageMeta): Promise<string> {
   const { anchors, topAnchors, files } = manifest();
   const slugger = new GithubSlugger();
@@ -140,12 +137,10 @@ export async function renderPage(page: PageMeta): Promise<string> {
   return renderMarkdown(body, ctx);
 }
 
-/** Every heading on a page, for the on-this-page table of contents. */
 export function tableOfContents(page: PageMeta): Heading[] {
   return page.headings;
 }
 
-/** The README's own opening block (its cover diagram), for the home page. */
 export async function renderHomeLead(): Promise<string> {
   const file = path.join(CONTENT, 'home.md');
   if (!fs.existsSync(file)) return '';

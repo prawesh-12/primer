@@ -62,7 +62,6 @@ export default function SearchDialog({ open, onOpenChange }: Props) {
   const [docs, setDocs] = useState<SearchDoc[]>(cached ?? []);
   const [query, setQuery] = useState('');
 
-  // The index is a few hundred KB; only pull it the first time it is opened.
   useEffect(() => {
     if (!open || cached) return;
     fetch(asset('/search-index.json'))
@@ -118,7 +117,6 @@ export default function SearchDialog({ open, onOpenChange }: Props) {
                   key={result.route}
                   value={result.route}
                   onSelect={() => go(result.route)}
-                  // The trailing check mark cmdk renders is meaningless here.
                   className="cursor-pointer flex-col items-start gap-0.5 py-2 [&>svg:last-child]:hidden"
                 >
                   <span className="text-muted-foreground text-[0.7rem] tracking-wide uppercase">

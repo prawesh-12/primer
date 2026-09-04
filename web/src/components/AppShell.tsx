@@ -14,7 +14,6 @@ import { SidebarInset, SidebarProvider, useSidebar } from '@/components/ui/sideb
 
 const normalize = (value: string) => (value !== '/' ? value.replace(/\/+$/, '') : '/');
 
-/** The mobile sidebar is a sheet; navigating inside it has to dismiss it. */
 function DismissOnNavigate({ pathname }: { pathname: string }) {
   const { setOpenMobile } = useSidebar();
   useEffect(() => setOpenMobile(false), [pathname, setOpenMobile]);

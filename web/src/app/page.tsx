@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   keywords: SITE_KEYWORDS,
   openGraph: {
-    // A page-level `openGraph` replaces the layout's wholesale, so `siteName`
-    // has to be repeated or Google loses the name it labels the result with.
+    // A page-level `openGraph` replaces the layout's wholesale, so every
+    // field the layout set has to be repeated here.
     siteName: SITE_NAME,
     locale: 'en_US',
     type: 'website',
@@ -260,7 +260,7 @@ export default async function Home() {
 
       {cover && (
         <div
-          // The primer's cover diagram is enormous; keep it from owning the fold.
+          // The cover diagram is enormous; keep it from owning the fold.
           className="prose mt-16 max-w-none [&_img]:mx-auto [&_img]:max-h-[30rem] [&_img]:w-auto"
           dangerouslySetInnerHTML={{ __html: cover }}
         />

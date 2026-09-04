@@ -2,10 +2,6 @@ import { GitHubIcon } from './Icons';
 import { Button } from '@/components/ui/button';
 import { BUILDER, LICENSE, UPSTREAM } from '@/lib/site';
 
-/**
- * A slim credit bar pinned to the bottom of the content column.  The sidebar
- * already carries every link, so the footer only has to carry attribution.
- */
 export default function SiteFooter() {
   return (
     <footer className="bg-background/80 sticky bottom-0 z-30 mt-auto border-t backdrop-blur-md">

@@ -81,25 +81,17 @@
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
 
-    /* ------------------------------------------------------------------ accent
-       Muted copper.  Hue 39, matching the #C4694A end of the brief; --brand sits
-       a shade darker than the literal hex so white-on-brand clears 4.5:1, and
-       --brand-strong is the variant used when the accent is text on a surface.
-       It is spent on three things only: the active nav indicator, badge fills,
-       and link hover.  No gradients, no glows. */
+    /* Accent: muted copper, hue 39. Darker than the literal hex so
+       white-on-brand clears contrast. */
     --brand: oklch(0.585 0.13 39);
     --brand-foreground: oklch(0.995 0 0);
     --brand-strong: oklch(0.545 0.132 39);
     --brand-subtle: color-mix(in oklch, var(--brand) 10%, transparent);
 
-    /* Links keep their own blue, separate from the copper accent: the accent
-       marks where you are, the link marks where you can go. */
-    --link: oklch(0.5 0.19 262);
+        --link: oklch(0.5 0.19 262);
     --link-hover: oklch(0.44 0.19 262);
 
-    /* The selected nav row is a raised light tile with dark text — pure white
-       against the rail's grey in light mode, near-white in dark. */
-    --sidebar-active: oklch(1 0 0);
+        --sidebar-active: oklch(1 0 0);
     --sidebar-active-foreground: oklch(0.205 0 0);
     --sidebar: oklch(0.969 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -143,9 +135,7 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
 
-    /* #D97757, the top of the brief's range — it has the headroom on a dark
-       ground that it lacks on white. */
-    --brand: oklch(0.672 0.131 39);
+        --brand: oklch(0.672 0.131 39);
     --brand-foreground: oklch(0.16 0.03 39);
     --brand-strong: oklch(0.735 0.125 40);
     --brand-subtle: color-mix(in oklch, var(--brand) 18%, transparent);
@@ -170,30 +160,19 @@
     }
 }
 
-/* ===========================================================================
-   DESIGN SYSTEM
-
-   Everything below derives from the shadcn theme tokens above.  Nothing here
-   introduces a colour of its own: the accent is `--primary`, the greys are
-   `--foreground` / `--muted-foreground`, and every intermediate tone is a
-   color-mix() of those.
-   =========================================================================== */
+/* Design system: everything below derives from the shadcn tokens above. */
 
 :root {
   --header-height: 3.5rem;
 
-  /* Reading measure.  Media (code, tables, diagrams) may exceed it; running
-     text may not — long lines are what kill scan speed. */
+  /* Reading measure: running text only, media may exceed it. */
   --measure: 70ch;
 
-  /* Three deliberate text tiers instead of the theme's two. */
-  --text-1: var(--foreground);
+    --text-1: var(--foreground);
   --text-2: color-mix(in oklch, var(--foreground) 74%, var(--muted-foreground));
   --text-3: var(--muted-foreground);
 
-  /* Neutral structure tones.  Prose carries no accent at all — the copper is
-     reserved for navigation and badges. */
-  --rule-strong: color-mix(in oklch, var(--foreground) 28%, transparent);
+    --rule-strong: color-mix(in oklch, var(--foreground) 28%, transparent);
   --rule-soft: var(--border);
 
   /* Masked so it takes its colour from the token, not from the file. */
@@ -211,12 +190,8 @@ html {
   }
 }
 
-/* ---------------------------------------------------------------------------
-   Article body.
-
-   Page bodies arrive as raw HTML from the remark/rehype pipeline, so they
-   cannot carry utility classes — the hierarchy has to live here.
-   --------------------------------------------------------------------------- */
+/* Article body. Arrives as raw HTML from remark/rehype, so it cannot carry
+   utility classes — the hierarchy has to live in element selectors. */
 .prose {
   color: var(--text-1);
   font-size: 1rem;
@@ -224,7 +199,6 @@ html {
   text-wrap: pretty;
 }
 
-/* Running text is held to the measure; media is free to use the full column. */
 .prose > :is(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6) {
   max-width: var(--measure);
 }
@@ -241,9 +215,8 @@ html {
   margin: 0 0 1.5rem;
 }
 
-/* ------------------------------------------------------- headings: the scale
-   The jumps are deliberate — 30 / 22 / 17 against a 16px body — and h2/h3
-   switch to the display face so a heading is identifiable before it is read. */
+/* Headings. 30 / 22 / 17 against a 16px body; h2 and h3 switch to the
+   display face. */
 
 .prose :is(h1, h2, h3, h4, h5, h6) {
   color: var(--text-1);
@@ -261,8 +234,6 @@ html {
   letter-spacing: -0.022em;
 }
 
-/* The landmark: a hued bar in the gutter, so section starts are findable at a
-   glance while skimming, without a full-width rule cutting the page up. */
 .prose h2::before {
   content: '';
   position: absolute;
@@ -315,10 +286,8 @@ html {
   opacity: 1;
 }
 
-/* --------------------------------------------- inline emphasis: four signals
-   link  = hue + underline      strong = weight, no hue
-   em    = italic + tier 2      code   = tinted mono chip
-   Each is distinguishable in peripheral vision; none collide. */
+/* Inline emphasis: link = hue + underline, strong = weight, em = italic,
+   code = tinted mono chip. */
 
 .prose a {
   color: var(--link);
@@ -357,12 +326,11 @@ html {
   font-weight: 500;
 }
 
-/* A link wrapping a code span should not stack two treatments. */
 .prose a code {
   color: inherit;
 }
 
-/* ------------------------------------------------------------------- lists */
+/* Lists */
 
 .prose :is(ul, ol) {
   margin: 0 0 1.5rem;
@@ -382,7 +350,6 @@ html {
   padding-left: 0.2rem;
 }
 
-/* Hued markers give a list its own rhythm without touching the text. */
 .prose ul > li::marker {
   color: var(--muted-foreground);
 }
@@ -401,18 +368,10 @@ html {
   margin-bottom: 0.75rem;
 }
 
-/* -------------------------------------------------------------- block level */
+/* Block level */
 
-/* --------------------------------------------------------------------------
-   Callouts.  Two shapes, told apart by structure rather than by fill colour.
+/* Callouts. Two shapes, told apart by structure rather than fill colour. */
 
-   The primer uses 80 of its 81 blockquotes as standfirsts sitting under a
-   heading — those are not notes and do not want a box.  Exactly one is a real
-   status note, and only that one is allowed any presence.
-   -------------------------------------------------------------------------- */
-
-/* Informational: inset text, one tier down, one quiet marker.  No fill, no
-   stripe, no frame. */
 .prose blockquote {
   position: relative;
   margin: 0 0 1.75rem;
@@ -440,8 +399,6 @@ html {
   margin-bottom: 0;
 }
 
-/* Status: a blockquote whose whole body is bold.  A hairline frame and the
-   accent icon — still no fill, so it reads as a note and not a banner. */
 .prose blockquote:has(> p:only-child > strong:only-child) {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -496,7 +453,7 @@ html {
   font-weight: 400;
 }
 
-/* ------------------------------------------------------------------ figures */
+/* Figures */
 
 .prose img {
   max-width: 100%;
@@ -504,15 +461,13 @@ html {
   border-radius: var(--radius-lg);
 }
 
-/* Most primer diagrams are line art on transparency; in dark mode they need a
-   light plate behind them.  `--foreground` is the theme's own near-white
-   there, and it is a no-op for the images that are already opaque. */
+/* Line art on transparency needs a light plate in dark mode. A no-op for
+   diagrams that are already opaque. */
 .dark .prose img {
   background-color: var(--foreground);
 }
 
-/* A figure is wrapped in <picture> to offer its WebP renditions, so centring
-   has to reach through the wrapper as well as apply to a bare <img>. */
+/* Figures are wrapped in <picture>, so centring has to reach through it. */
 .prose picture {
   display: block;
 }
@@ -538,7 +493,7 @@ html {
   font-style: normal;
 }
 
-/* ------------------------------------------------------------------- tables */
+/* Tables */
 
 .prose .table-scroll {
   margin: 0 0 1.75rem;
@@ -586,10 +541,7 @@ html {
   text-decoration: none;
 }
 
-/* ---------------------------------------------------------------------------
-   highlight.js.  One hue plus the tonal tiers — enough separation to read
-   structure in a snippet without turning code into confetti.
-   --------------------------------------------------------------------------- */
+/* highlight.js */
 .hljs-comment,
 .hljs-quote {
   color: var(--text-3);
@@ -643,10 +595,7 @@ html {
   font-weight: 700;
 }
 
-/* ---------------------------------------------------------------------------
-   Scroll affordance for the sidebar: shadows that appear only when there is
-   content past the edge.  Pure CSS (background-attachment: local), no JS.
-   --------------------------------------------------------------------------- */
+/* Sidebar scroll shadows, via background-attachment: local. */
 .scroll-shadow > [data-radix-scroll-area-viewport] {
   background:
     linear-gradient(var(--sidebar) 30%, transparent) top / 100% 1.5rem no-repeat local,
@@ -665,7 +614,6 @@ html {
       bottom / 100% 0.45rem no-repeat scroll;
 }
 
-/* A quiet scrollbar for the on-this-page rail, drawn from the theme. */
 .toc-scroll {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -684,12 +632,7 @@ html {
   background: color-mix(in oklch, var(--foreground) 30%, transparent);
 }
 
-/* ---------------------------------------------------------------------------
-   The licence page opens with Donne Martin speaking in his own voice.  In the
-   README that is an italic paragraph rather than a blockquote, so it is
-   matched on shape: the leading paragraph whose only content is emphasis.
-   The signature is drawn in CSS, leaving the published markdown untouched.
-   --------------------------------------------------------------------------- */
+/* The licence page opens with an italic paragraph, not a blockquote. */
 .prose-quoted > p:first-child:has(> em:only-child) {
   position: relative;
   margin-bottom: 2rem;

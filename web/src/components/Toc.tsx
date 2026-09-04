@@ -5,12 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { Heading } from '@/lib/content';
 import { cn } from '@/lib/utils';
 
-/** The right-hand "on this page" rail, tracking the reader's position. */
 export default function Toc({ headings }: { headings: Heading[] }) {
   const navRef = useRef<HTMLElement>(null);
   const [active, setActive] = useState<string | null>(null);
 
-  // Which heading is the reader currently under?
   useEffect(() => {
     if (headings.length < 2) return;
     const ids = headings.map((heading) => heading.id);
@@ -21,8 +19,7 @@ export default function Toc({ headings }: { headings: Heading[] }) {
         .filter((element): element is HTMLElement => Boolean(element));
       if (!elements.length) return;
 
-      // The offset clears the sticky header, so a heading counts as "current"
-      // once it reaches the top of the readable area rather than the viewport.
+      // Clears the sticky header.
       const offset = 96;
       let current = elements[0].id;
       for (const element of elements) {
@@ -30,8 +27,7 @@ export default function Toc({ headings }: { headings: Heading[] }) {
         current = element.id;
       }
 
-      // The last section can never win on height alone; at the bottom of the
-      // page it should always be the active one.
+      // The last section can never win on height alone.
       const atBottom =
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
       setActive(atBottom ? elements[elements.length - 1].id : current);
@@ -46,7 +42,7 @@ export default function Toc({ headings }: { headings: Heading[] }) {
     };
   }, [headings]);
 
-  // Keep the active entry in view *within the rail*, never by moving the page.
+  // Scroll the rail, never the page.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav || !active) return;
@@ -65,8 +61,6 @@ export default function Toc({ headings }: { headings: Heading[] }) {
   if (headings.length < 2) return null;
 
   return (
-    // A flex column, so the list gets whatever height is left over rather than
-    // a height hand-matched to the label above it.
     <aside className="sticky top-(--header-height) hidden h-[calc(100svh-var(--header-height))] w-56 shrink-0 flex-col py-10 xl:flex">
       <p className="text-muted-foreground mb-4 shrink-0 text-[0.7rem] font-semibold tracking-[0.08em] uppercase">
         On this page

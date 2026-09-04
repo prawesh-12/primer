@@ -13,17 +13,14 @@ import type { Element, Root, Text } from 'hast';
 import { UPSTREAM, asset } from './site';
 
 export interface LinkContext {
-  /** Route of the page being rendered, e.g. "/hld/cache". */
   route: string;
   /** Original heading slug -> route it now lives on. */
   anchors: Record<string, string>;
   /** Route -> the anchor that page used to answer to as a whole. */
   topAnchors: Record<string, string>;
-  /** Repo file path -> route, for links between solution pages. */
+  /** Repo file path -> route. */
   files: Record<string, string>;
-  /** Heading ids that exist on this page. */
   ownAnchors: Set<string>;
-  /** Image file name -> intrinsic size, so the browser can reserve the box. */
   imageSizes: Record<string, { width: number; height: number; renditions?: Rendition[] }>;
 }
 
@@ -34,9 +31,9 @@ interface Rendition {
   file: string;
 }
 
-/** The prose column tops out at 48rem; below that a figure runs edge to edge. */
+// Matches the prose column's max-width.
 const FIGURE_SIZES = '(max-width: 48rem) 100vw, 48rem';
-/** GitHub proxies remote images through camo; the hex path is the real URL. */
+// GitHub proxies remote images through camo; the hex path is the real URL.
 const CAMO = /^https?:\/\/camo\.githubusercontent\.com\/[0-9a-f]+\/([0-9a-f]+)$/;
 const DROPPED = new Set(['CONTRIBUTING.md', 'TRANSLATIONS.md', 'LICENSE.txt']);
 
@@ -44,19 +41,14 @@ function upstream(fragment: string) {
   return `${UPSTREAM}#${fragment}`;
 }
 
-/**
- * Point every link in the original markdown at its new home.  Anchors that
- * used to jump around one huge README now cross page boundaries; relative
- * repo paths become routes; anything still unresolved falls back to the
- * upstream repository rather than 404ing.
- */
+// Anchors that used to jump around one README now cross pages; anything
+// unresolved falls back upstream rather than 404ing.
 function rewriteLinks(ctx: LinkContext) {
   const resolveAnchor = (fragment: string) => {
     if (!fragment) return ctx.route;
     if (ctx.ownAnchors.has(fragment)) return `#${fragment}`;
     const route = ctx.anchors[fragment];
     if (!route) return upstream(fragment);
-    // The whole page answers to this anchor: link to the page, not a fragment.
     if (ctx.topAnchors[route] === fragment) return route === ctx.route ? '#top' : `${asset(route)}/`;
     return route === ctx.route ? `#${fragment}` : `${asset(route)}/#${fragment}`;
   };
@@ -74,7 +66,6 @@ function rewriteLinks(ctx: LinkContext) {
     const direct = ctx.files[clean];
     if (direct) return `${asset(direct)}/${tail}`;
 
-    // "../scaling_aws/README.md" and friends: match on the trailing segments.
     const match = Object.keys(ctx.files).find((key) => key.endsWith(clean.replace(/^(\.\.\/)+/, '')));
     if (match) return `${asset(ctx.files[match])}/${tail}`;
 
@@ -129,7 +120,6 @@ function rewriteLinks(ctx: LinkContext) {
           node.properties!.height = size.height;
         }
 
-        // The first diagram is usually what the reader waits for; the rest can wait.
         node.properties!.loading = firstImage ? 'eager' : 'lazy';
         if (firstImage) node.properties!.fetchPriority = 'high';
         firstImage = false;
@@ -142,10 +132,7 @@ function rewriteLinks(ctx: LinkContext) {
               : `${lastHeading || 'System design'} diagram`;
         }
 
-        // Offer the WebP renditions first and keep the PNG as the fallback, so
-        // a phone fetches the rendition that fits its column rather than the
-        // full 3000px original.  Returning SKIP stops the walk from finding
-        // the <img> again inside the <picture> we just built around it.
+        // SKIP, or the walk finds this <img> again inside the <picture>.
         if (size?.renditions?.length) {
           const img: Element = { ...node, properties: { ...node.properties } };
           node.tagName = 'picture';
@@ -170,7 +157,6 @@ function rewriteLinks(ctx: LinkContext) {
   };
 }
 
-/** Wide tables must scroll inside their own box, never the page body. */
 function scrollableTables() {
   return (tree: Root) => {
     visit(tree, 'element', (node: Element, index, parent) => {
@@ -186,7 +172,6 @@ function scrollableTables() {
   };
 }
 
-/** GitHub renders `:+1:`; a browser needs the character. */
 function emoji() {
   return (tree: Root) => {
     visit(tree, 'text', (node: Text) => {
@@ -201,12 +186,8 @@ const AUTOLINK: AutolinkOptions = {
   content: { type: 'text', value: '#' },
 };
 
-/**
- * GitHub's HTML parser accepts unquoted attribute values such as
- * `<a href=https://example.com>`; CommonMark does not, and the URL would end
- * up autolinked as literal text.  Quoting them keeps the rendered output
- * identical to what GitHub shows.  Fenced code is left alone.
- */
+// GitHub accepts `<a href=https://example.com>`; CommonMark does not, and
+// would autolink the URL as literal text instead.
 function quoteRawAttributes(markdown: string): string {
   let fenced = false;
   return markdown
@@ -240,7 +221,6 @@ export async function renderMarkdown(markdown: string, ctx: LinkContext): Promis
   return String(file);
 }
 
-/** Plain text of a markdown document, for search indexing and meta tags. */
 export function toPlainText(markdown: string): string {
   return markdown
     .replace(/```[\s\S]*?```/g, ' ')

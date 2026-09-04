@@ -1,10 +1,7 @@
 #!/usr/bin/env node
-/**
- * Prove the restructure is lossless: every non-blank line of the original
- * markdown must still appear, unchanged, in exactly one generated page.
- * Heading markers are the one thing allowed to differ, since a section that
- * becomes a page has to be re-levelled.
- */
+// Every non-blank line of the original markdown must still appear, unchanged,
+// in exactly one generated page. Heading markers may differ: a section that
+// becomes a page has to be re-levelled.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,10 +19,7 @@ function linesOf(md) {
   return md.split('\n').map(strip).filter(meaningful);
 }
 
-// ---- what the sources contain --------------------------------------------
-
-// The primer text lives only in the upstream repo; generate-content.mjs caches
-// it here, so verify reads whatever that last pulled.
+// Verify reads whatever generate-content.mjs last pulled into the cache.
 const CACHED_README = path.join(ROOT, '.upstream', 'README.md');
 if (!fs.existsSync(CACHED_README)) {
   console.error('missing .upstream/README.md - run `npm run content` first.');
@@ -44,7 +38,6 @@ for (const file of sources) {
   }
 }
 
-// Notebook cells, flattened the same way the generator flattens them.
 for (const dir of fs.readdirSync(path.join(ROOT, 'solutions', 'object_oriented_design'))) {
   const folder = path.join(ROOT, 'solutions', 'object_oriented_design', dir);
   if (!fs.statSync(folder).isDirectory()) continue;
@@ -64,8 +57,6 @@ for (const dir of fs.readdirSync(path.join(ROOT, 'solutions', 'object_oriented_d
   }
 }
 
-// ---- what the site contains ----------------------------------------------
-
 const produced = new Map();
 const walk = (dir) => {
   for (const name of fs.readdirSync(dir)) {
@@ -74,7 +65,6 @@ const walk = (dir) => {
     else if (name.endsWith('.md')) {
       const parsed = matter(fs.readFileSync(full, 'utf8'));
       const bump = (line) => produced.set(line, (produced.get(line) || 0) + 1);
-      // A page's title is rendered as its <h1>; it lives in the frontmatter.
       if (parsed.data.title) bump(strip(String(parsed.data.title)));
       for (const line of linesOf(parsed.content)) bump(line);
     }
@@ -82,24 +72,15 @@ const walk = (dir) => {
 };
 walk(CONTENT);
 
-// Section hubs render their lead straight out of the manifest.
 const { sections } = JSON.parse(fs.readFileSync(path.join(CONTENT, 'manifest.json'), 'utf8'));
 for (const section of sections) {
   for (const line of linesOf(section.lead || '')) produced.set(line, (produced.get(line) || 0) + 1);
 }
 
-/**
- * One heading is deliberately re-labelled: the README's "Appendix" is the
- * site's "Reference" section, because a sidebar entry called Appendix tells a
- * reader nothing.  Its text is published unchanged underneath.
- */
+// The README's "Appendix" is shown as "Reference"; its text is unchanged.
 const RELABELLED = new Set(['Appendix']);
 
-/**
- * Sections this edition deliberately does not publish, recorded by the
- * generator.  They are removed from what we expect to find, so an intentional
- * cut reads as intentional and only a genuine loss fails the check.
- */
+// Deliberate cuts, recorded by the generator, so only a genuine loss fails.
 let omittedLines = 0;
 const omittedFile = path.join(CONTENT, 'omitted.json');
 if (fs.existsSync(omittedFile)) {
@@ -114,15 +95,12 @@ if (fs.existsSync(omittedFile)) {
   }
 }
 
-// ---- compare --------------------------------------------------------------
-
 const dropped = [];
 for (const [line, count] of expected) {
   const have = produced.get(line) || 0;
   if (have < count && !RELABELLED.has(line)) dropped.push({ line, expected: count, produced: have });
 }
 
-// Fence markers the notebook flattening introduces around code and output.
 const SCAFFOLD = new Set(['```python', '```text', '```']);
 
 const added = [];

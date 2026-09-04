@@ -37,8 +37,8 @@ export const SITE_ALTERNATE_NAMES = [
   'HLD and LLD Primer',
 ];
 
-/** Absolute, and shaped exactly like an Open Graph image entry: spreading it
- *  into `openGraph.images` must not leak stray keys as `og:image:*` tags. */
+// Shaped exactly like an Open Graph image entry: any extra key here is
+// emitted as its own `og:image:*` tag.
 export const SITE_OG_IMAGE = {
   url: absolute('/images/og-system-design-primer.png'),
   width: 1200,
@@ -46,7 +46,6 @@ export const SITE_OG_IMAGE = {
   alt: 'System Design Primer: HLD, LLD and interviews',
 };
 
-/** Every icon the site ships, as served from `public/`. */
 export const SITE_ICONS = {
   ico: '/favicon.ico',
   svg: '/favicon.svg',
@@ -56,10 +55,8 @@ export const SITE_ICONS = {
   manifest: '/site.webmanifest',
 };
 
-/** The upstream repository every piece of content comes from. */
 export const UPSTREAM = 'https://github.com/donnemartin/system-design-primer';
 
-/** Who put this reading edition together. */
 export const BUILDER = 'https://github.com/prawesh-12';
 
 export const LICENSE = {
@@ -68,13 +65,11 @@ export const LICENSE = {
   holder: 'Donne Martin',
 };
 
-/** Prefix a site-absolute path with the deployment basePath. */
 export function asset(pathname: string): string {
   if (!pathname.startsWith('/')) return pathname;
   return `${BASE_PATH}${pathname}`;
 }
 
-/** Absolute URL for canonical tags, sitemaps and structured data. */
 export function absolute(pathname: string): string {
   const origin = new URL(SITE_URL).origin;
   return `${origin}${asset(pathname)}`;

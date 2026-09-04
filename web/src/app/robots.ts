@@ -9,13 +9,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        // `/robots.txt` is listed explicitly because it is the longer, and so
-        // the winning, match against the `*.txt` rule below.
+        // `/robots.txt` is the longer, and so the winning, match against
+        // the `*.txt` rule below, which excludes Next's RSC payloads.
         allow: ['/', '/robots.txt'],
-        // Next writes an RSC payload beside every page for client-side
-        // navigation.  They are machine-readable duplicates of pages that are
-        // already indexed, so keep crawl budget on the HTML.  The search index
-        // is the same content again, as one 100 KB JSON blob.
         disallow: ['/*.txt$', '/search-index.json'],
       },
     ],

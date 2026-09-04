@@ -24,7 +24,6 @@ import './globals.css';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
-/** Headings only: a face with enough character to be an entry point on sight. */
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
 
 export const metadata: Metadata = {
@@ -40,9 +39,8 @@ export const metadata: Metadata = {
   creator: 'Donne Martin',
   publisher: SITE_NAME,
   alternates: { canonical: '/' },
-  // Search engines only look for a favicon on the pages they crawl, so the
-  // icons have to be declared in the markup - shipping them in `public/` is
-  // not enough on its own.
+  // Shipping the files in `public/` is not enough: crawlers only look for a
+  // favicon that is declared in the markup.
   manifest: asset(SITE_ICONS.manifest),
   icons: {
     icon: [
@@ -107,8 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     '@context': 'https://schema.org',
     '@graph': [
       {
-        // One publisher node the article, hub and website pages all point at,
-        // rather than three copies Google has to reconcile into one entity.
+        // One node every other page type references by @id.
         '@type': 'Organization',
         '@id': `${SITE_URL}/#organization`,
         name: SITE_NAME,
